@@ -106,8 +106,8 @@ function statsHTML(){const total=games.reduce((n,g)=>n+(Number(g.quantity)||1),0
  return `<div class="app">${header()}<div class="sectionTitle">Statistiques</div><section class="hero"><div class="stats"><div class="stat"><b>${games.length}</b><span>jeux</span></div><div class="stat"><b>${total}</b><span>exemplaires</span></div><div class="stat"><b>${euro(val)}</b><span>valeur connue</span></div></div><p class="hint" style="margin-top:14px">${known} jeu(x) avec un prix renseigné · ${games.length-known} sans prix.</p></section><div class="sectionTitle">Par plateforme</div>${platformRows}</div>`}
 
 function backupHTML(){return `<div class="app">${header()}<div class="sectionTitle">Sauvegarde</div><section class="hero"><h2 style="margin-top:0">Tes données restent locales</h2><p class="hint">Exporte régulièrement ta collection. Le fichier JSON contient aussi les photos enregistrées dans l'application.</p><div class="actions"><button class="ok" onclick="exportData()">📤 Exporter</button><button onclick="$('#importInput').click()">📥 Importer</button></div><p class="hint" style="margin-top:14px">L'import peut remplacer les données actuelles : une confirmation sera demandée.</p></section></div>`}
-function settingsHTML(){const api=localStorage.getItem('retro_api_url')||'';return `<div class="app">${header()}<div class="sectionTitle">Réglages</div><section class="hero"><h2 style="margin-top:0">IA de reconnaissance</h2><p class="hint">L'URL ci-dessous sera appelée uniquement lorsque tu demandes une reconnaissance. La clé OpenAI n'est jamais stockée ici.</p><div class="field"><label>URL de ton serveur sécurisé</label><input id="apiUrl" value="${escapeHtml(api)}" placeholder="https://ton-worker.workers.dev/recognize"></div><div class="actions"><button class="ok" onclick="saveSettings()">Enregistrer</button></div></section><section class="hero"><h2 style="margin-top:0">Sécurité</h2><p class="hint">Ne colle jamais ta clé OpenAI dans cette application. Elle doit rester comme secret côté serveur.</p></section></div>`}
-function saveSettings(){localStorage.setItem('retro_api_url',$('#apiUrl').value.trim().replace(/\/$/,''));toast('Réglages enregistrés');}
+function settingsHTML(){const api=localStorage.getItem('retro_api_url')||'';return `<div class="app">${header()}<div class="sectionTitle">Réglages</div><section class="hero"><h2 style="margin-top:0">IA de reconnaissance</h2><p class="hint">L'URL ci-dessous sera appelée uniquement lorsque tu demandes une reconnaissance. La clé OpenAI n'est jamais stockée ici.</p><div class="field"><label>URL de ton serveur sécurisé</label><input id="apiUrl" value="${escapeHtml(api)}" placeholder="https://ton-worker.workers.dev"></div><div class="actions"><button class="ok" onclick="saveSettings()">Enregistrer</button><button onclick="testWorker()">🔌 Tester la connexion</button></div><p id="workerStatus" class="hint"></p></section><section class="hero"><h2 style="margin-top:0">Sécurité</h2><p class="hint">Ne colle jamais ta clé OpenAI dans cette application. Elle doit rester comme secret côté serveur.</p></section></div>`}
+function saveSettings(){localStorage.setItem('retro_api_url',$('#apiUrl').value.trim().replace(/\/$/,''));toast('Réglages enregistrés');}\nasync function testWorker(){const url=localStorage.getItem('retro_api_url')||$('#apiUrl')?.value.trim().replace(/\/$/,'');const out=$('#workerStatus');if(!url){toast('Indique d’abord l’URL du Worker.');return}if(out)out.textContent='Test en cours…';try{const r=await fetch(url,{method:'GET'});const text=await r.text();if(out)out.textContent=`Serveur joignable : HTTP ${r.status} — ${text.slice(0,120)}`;toast('Serveur joignable');}catch(e){if(out)out.textContent='Connexion impossible : '+e.message;toast('Connexion impossible');}}
 function openAdd(){editingId=null;pendingImage='';$('#photoPreviewWrap').innerHTML='';$('#photoDialog').showModal()}
 const photoDialog=$('#photoDialog');
 function pickPhoto(which){$(which==='camera'?'#cameraInput':'#galleryInput').click()}
@@ -118,8 +118,19 @@ function resizeImage(file){return new Promise((res,rej)=>{const r=new FileReader
 async function recognizePhoto(){
  const url=localStorage.getItem('retro_api_url');if(!url){toast('Configure d’abord l’URL du serveur dans Réglages.');return}
  const wrap=$('#photoPreviewWrap');wrap.insertAdjacentHTML('beforeend','<p id="loading" class="hint"><span class="loader"></span> Analyse en cours…</p>');
- try{const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image:pendingImage})});const data=await r.json();if(!r.ok)throw new Error(data.error||'Erreur serveur');photoDialog.close();openEditor({...data,image:pendingImage});}
- catch(e){$('#loading')?.remove();toast('Erreur : '+e.message)}
+ try{
+   const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),45000);
+   const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image:pendingImage}),signal:controller.signal});
+   clearTimeout(timer);
+   const raw=await r.text();let data={};try{data=raw?JSON.parse(raw):{};}catch{}
+   if(!r.ok)throw new Error(data.error||`Erreur serveur HTTP ${r.status}`);
+   if(!data.title && !data.platform)throw new Error('Le serveur a répondu sans identification.');
+   photoDialog.close();openEditor({...data,image:pendingImage});
+ }catch(e){
+   $('#loading')?.remove();
+   const msg=e.name==='AbortError'?'Le serveur met trop de temps à répondre.':e.message;
+   wrap.insertAdjacentHTML('beforeend',`<p class="hint" style="color:#fecaca">❌ ${escapeHtml(msg)}</p>`);toast('Reconnaissance impossible');
+ }
 }
 function openEditor(g={}){
  editingId=g.id||null;
@@ -134,14 +145,14 @@ function openEditor(g={}){
  <div class="field"><label>Date de l'estimation</label><input id="fPriceDate" type="date" value="${g.priceDate||''}"></div>
  <div class="field"><label>Notes</label><textarea id="fNotes">${escapeHtml(g.notes||'')}</textarea></div>
  <p class="hint">Confiance IA : ${escapeHtml(g.confidence||'non indiquée')}. Corrige librement les informations avant d'enregistrer.</p>
- <div class="actions"><button onclick="gameDialog.close()">Annuler</button><button class="ok" onclick="saveEditor()">💾 Enregistrer</button>${editingId?'<button class="danger" onclick="removeEditing()">🗑️ Supprimer</button>':''}</div>`;
+ <div class="actions"><button onclick="gameDialog.close()">Annuler</button>${g.title?`<button onclick="window.open(ebayUrlFromForm(), '_blank')">🔎 Voir eBay</button>`:''}<button class="ok" onclick="saveEditor()">💾 Enregistrer</button>${editingId?'<button class="danger" onclick="removeEditing()">🗑️ Supprimer</button>':''}</div>`;
  d.showModal();
 }
 const gameDialog=$('#gameDialog');
 async function saveEditor(){const old=editingId?games.find(x=>x.id===editingId):null;const g={id:editingId||crypto.randomUUID(),image:old?.image||pendingImage,title:$('#fTitle').value.trim(),platform:$('#fPlatform').value.trim(),year:$('#fYear').value||'',edition:$('#fEdition').value.trim(),condition:$('#fCondition').value,quantity:Math.max(1,Number($('#fQty').value)||1),price:$('#fPrice').value===''?'':Number($('#fPrice').value),priceDate:$('#fPriceDate').value,notes:$('#fNotes').value.trim(),updatedAt:new Date().toISOString()};await putGame(g);gameDialog.close();pendingImage='';await refresh();toast('Jeu enregistré')}
 async function editGame(id){const g=games.find(x=>x.id===id);if(g)openEditor(g)}
 async function removeEditing(){if(!editingId)return;if(confirm('Supprimer définitivement ce jeu ?')){await deleteGame(editingId);gameDialog.close();await refresh();toast('Jeu supprimé')}}
-function ebayUrl(g){return 'https://www.ebay.fr/sch/i.html?_nkw='+encodeURIComponent([g.title,g.platform,g.edition].filter(Boolean).join(' '))}
+function ebayUrl(g){return 'https://www.ebay.fr/sch/i.html?_nkw='+encodeURIComponent([g.title,g.platform,g.edition].filter(Boolean).join(' '))}\nfunction ebayUrlFromForm(){return ebayUrl({title:$('#fTitle')?.value||'',platform:$('#fPlatform')?.value||'',edition:$('#fEdition')?.value||''})}
 function exportData(){const payload={app:'Retro Collection',version:1,exportedAt:new Date().toISOString(),games};const blob=new Blob([JSON.stringify(payload)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='retro-collection-sauvegarde.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
 $('#importInput').onchange=async e=>{const file=e.target.files[0];if(!file)return;try{const data=JSON.parse(await file.text());if(!Array.isArray(data.games))throw new Error('Fichier invalide');if(!confirm('Remplacer la collection actuelle par cette sauvegarde ?'))return;for(const g of games)await deleteGame(g.id);for(const g of data.games)await putGame(g);await refresh();toast('Sauvegarde importée')}catch(err){toast('Import impossible : '+err.message)}e.target.value=''}
 document.addEventListener('click',e=>{const a=e.target.closest('[data-ebay]');if(a){e.preventDefault();const g=games.find(x=>x.id===a.dataset.ebay);if(g)location.href=ebayUrl(g)}});
