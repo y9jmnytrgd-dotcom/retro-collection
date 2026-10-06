@@ -93,6 +93,159 @@ box-shadow:0 0 0 3px #140307,0 18px 45px #ff3b1828;margin-bottom:13px}
 .backTop{border:1px solid #ff6b42;background:linear-gradient(135deg,#2a102f,#54132c);color:#fff;border-radius:14px;padding:10px 14px;font-weight:900;cursor:pointer;box-shadow:0 0 18px #ff3b1830;white-space:nowrap}
 .backTop:hover{transform:translateY(-1px);box-shadow:0 0 24px #ff3b1860}
 @media(max-width:650px){.backTop{padding:9px 11px;font-size:13px}.arcadeHeader{grid-template-columns:auto 1fr auto}.arcadeLogo{font-size:15px}}
+
+/* === MOBILE POLISH / ANTI-DEBORDEMENT === */
+*,*::before,*::after{box-sizing:border-box}
+html,body{max-width:100%;overflow-x:hidden}
+img{max-width:100%}
+button,input,select,textarea{max-width:100%;min-width:0}
+.arcadeHeader,.arcadeShell,.collectionHeading,.arcadeFilters,.marketGrid,.detailActions,.actions{min-width:0}
+.arcadeTool,.collectionAdd,.backTop,.detailAction,.marketBig{max-width:100%;overflow:hidden;text-overflow:ellipsis}
+
+@media(max-width:650px){
+  .app{width:calc(100% - 20px);max-width:100%;padding:12px 0 40px}
+
+  /* Header mobile : logo / recherche / outils, tout centré */
+  .arcadeHeader{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:9px;
+    width:100%;
+  }
+  .arcadeLogo{
+    width:100%;
+    text-align:center;
+    font-size:20px;
+    line-height:.95;
+  }
+  .arcadeSearch{
+    display:block;
+    width:100%;
+    max-width:560px;
+    height:46px;
+    margin:0 auto;
+    text-align:left;
+  }
+  .arcadeTools{
+    width:100%;
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    align-items:center;
+    gap:7px;
+  }
+  .arcadeTool{
+    flex:0 1 auto;
+    height:40px;
+    padding:0 10px;
+    font-size:11px;
+    white-space:nowrap;
+  }
+
+  /* Navigation haute : 2 x 2 sur les petits écrans pour éviter les boutons tassés */
+  .arcadeTabs{
+    width:100%;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:3px;
+    padding:4px;
+  }
+  .arcadeTabs button{
+    min-width:0;
+    padding:10px 3px;
+    font-size:10px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  .fightBanner{width:100%;margin-left:auto;margin-right:auto}
+
+  .collectionHeading{
+    width:100%;
+    align-items:center;
+    gap:8px;
+  }
+  .collectionHeading>div{min-width:0}
+  .collectionHeading h1{font-size:24px;line-height:1}
+  .collectionHeading p{line-height:1.25}
+  .collectionAdd{flex:0 0 auto}
+
+  .arcadeFilters{
+    width:100%;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  }
+  .arcadeFilters>*{width:100%;min-width:0;padding:0 9px;font-size:12px}
+
+  .arcadeGrid{
+    width:100%;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  .arcadeCard{min-width:0}
+  .arcadeThumb{height:125px}
+  .arcadeCardBody{min-width:0}
+  .arcadeTitle{font-size:13px}
+  .arcadePrice{font-size:16px}
+
+  .detailPanel{width:100%;max-width:100%;margin-left:auto;margin-right:auto}
+  .marketGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .marketBig{width:100%;min-width:0;padding:0 6px}
+  .detailActions{grid-template-columns:1fr!important;width:100%}
+  .detailAction{width:100%;min-width:0}
+
+  .actions{
+    width:100%;
+    flex-direction:column;
+    align-items:stretch;
+  }
+  .actions button{
+    width:100%;
+    min-width:0;
+    flex:0 0 auto;
+  }
+
+  .backTop{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:auto;
+    max-width:100%;
+    white-space:nowrap;
+  }
+
+  .bottomSummary{width:100%}
+}
+
+@media(max-width:390px){
+  .app{width:calc(100% - 14px)}
+  .arcadeLogo{font-size:18px}
+  .arcadeTool{font-size:10px;padding:0 8px}
+  .arcadeTabs button{font-size:9px;padding:9px 2px}
+  .collectionHeading h1{font-size:21px}
+  .collectionHeading p{font-size:10px}
+  .collectionAdd{padding:9px 11px}
+  .arcadeGrid{grid-template-columns:1fr}
+  .arcadeThumb{height:155px}
+  .arcadeFilters{grid-template-columns:1fr}
+  .arcadeFilters .wide{grid-column:auto}
+  .marketGrid{grid-template-columns:1fr}
+  .fightBanner{height:92px}
+  .fightWord{font-size:48px}
+}
+
+
+/* === MOBILE LOGO / FIGHT SAFE AREA === */
+@media(max-width:650px){
+  .arcadeLogo{width:100%;max-width:320px;min-width:0;overflow:hidden;text-align:center;white-space:normal;word-break:keep-all;font-size:clamp(18px,7vw,24px);letter-spacing:-1px;line-height:.9;padding:2px 4px}
+  .fightBanner{width:100%;max-width:100%;overflow:hidden}
+  .fightWord{max-width:92%;font-size:clamp(42px,15vw,62px);letter-spacing:-3px;white-space:nowrap}
+  .fighter{max-width:32vw;max-height:32vw}
+}
+@media(max-width:390px){
+  .arcadeLogo{font-size:clamp(17px,6.5vw,21px);max-width:290px}
+  .fightWord{font-size:clamp(38px,14vw,52px)}
+}
 </style>
 </head>
 <body>
