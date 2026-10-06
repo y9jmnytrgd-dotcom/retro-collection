@@ -31,6 +31,74 @@ dialog{width:min(94%,620px);max-height:90vh;border:1px solid var(--border);backg
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:92px;background:#252533;color:white;border:1px solid var(--border);padding:11px 15px;border-radius:13px;z-index:50;box-shadow:var(--shadow);max-width:90%;font-size:13px}
 .consoleGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.valuebar{height:8px;background:#29202a;border-radius:99px;overflow:hidden;margin-top:9px}.valuebar i{display:block;height:100%;background:linear-gradient(90deg,#ff3b30,#ffb000);border-radius:99px}.street{position:relative;overflow:hidden;background:linear-gradient(135deg,rgba(82,10,12,.98),rgba(19,5,7,.98));border:2px solid #ff3b18;box-shadow:0 0 0 3px #120304,0 16px 45px rgba(255,59,24,.18)}.street:before{content:"FIGHT!";position:absolute;right:-20px;top:-28px;font-size:92px;font-weight:1000;font-style:italic;color:rgba(255,196,0,.08);transform:rotate(-8deg);pointer-events:none}.street:after{content:"◆ ◆ ◆";position:absolute;right:18px;bottom:10px;color:rgba(255,196,0,.2);font-size:18px;letter-spacing:7px;pointer-events:none}.street h1,.street h2{ text-shadow:2px 2px 0 #000}.streetBadge{display:inline-block;background:linear-gradient(90deg,#ff3b18,#ff8a00);color:#fff;font-weight:900;padding:5px 9px;border-radius:8px;transform:skew(-8deg);font-size:11px;letter-spacing:.5px;margin-bottom:9px}@media(max-width:500px){.consoleGrid{grid-template-columns:1fr}}.sectionTitle{font-size:18px;font-weight:850;margin:18px 2px 10px}.subtle{color:var(--muted)}
 </style>
+
+<style id="retro-arcade-final">
+:root{
+  --arc-red:#ff2638;
+  --arc-orange:#ff6a00;
+  --arc-yellow:#ffd21f;
+  --arc-purple:#9b2cff;
+  --arc-cyan:#19ddff;
+  --arc-green:#48f0a0;
+}
+body{
+  background:
+    radial-gradient(circle at 12% 0%,rgba(255,38,56,.20),transparent 28%),
+    radial-gradient(circle at 90% 8%,rgba(155,44,255,.20),transparent 30%),
+    radial-gradient(circle at 55% 100%,rgba(25,221,255,.08),transparent 35%),
+    linear-gradient(145deg,#050207 0%,#12030a 48%,#090313 100%) !important;
+}
+header,.topbar,.app-header{
+  border-bottom:2px solid rgba(255,38,56,.5)!important;
+  box-shadow:0 5px 28px rgba(255,38,56,.15)!important;
+}
+button{
+  border-radius:12px!important;
+  font-weight:900!important;
+  letter-spacing:.2px;
+  transition:transform .12s ease,filter .12s ease,box-shadow .12s ease!important;
+}
+button:active{transform:scale(.96)!important}
+.card,.panel,.gameCard,.statCard,.modal{
+  border:1px solid rgba(255,255,255,.10)!important;
+  box-shadow:0 10px 30px rgba(0,0,0,.38),0 0 22px rgba(155,44,255,.08)!important;
+}
+h1,h2,h3{
+  text-shadow:0 2px 14px rgba(255,38,56,.28);
+}
+.price{
+  color:var(--arc-green)!important;
+  text-shadow:0 0 10px rgba(72,240,160,.20);
+}
+.estimateBox{
+  padding:7px 9px!important;
+  margin-top:6px!important;
+  border-radius:9px!important;
+  background:linear-gradient(135deg,rgba(255,38,56,.11),rgba(155,44,255,.11))!important;
+  border:1px solid rgba(255,106,0,.28)!important;
+  font-size:11px!important;
+}
+.estimateTitle{
+  font-size:9px!important;
+  text-transform:uppercase;
+  letter-spacing:.7px;
+  opacity:.78;
+}
+.estimateMain{
+  font-size:17px!important;
+  line-height:1.05!important;
+  color:var(--arc-yellow)!important;
+  text-shadow:0 0 11px rgba(255,210,31,.24);
+}
+.estimateRange{
+  font-size:10px!important;
+  margin-top:2px!important;
+}
+nav button.active,.nav button.active{
+  box-shadow:0 0 18px rgba(255,38,56,.26)!important;
+}
+</style>
+
 </head>
 <body>
 <div id="app"></div>
@@ -270,5 +338,42 @@ document.addEventListener('click',e=>{const a=e.target.closest('[data-ebay]');if
 
 (async()=>{await openDB();nav();await refresh();if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});})();
 </script>
+
+<script id="duplicate-game-detection">
+function normalizeGameText(v){
+  return String(v||"").toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+    .replace(/[^a-z0-9]+/g," ").trim();
+}
+function findExistingGame(info){
+  const title=normalizeGameText(info.title);
+  const platform=normalizeGameText(info.platform);
+  const edition=normalizeGameText(info.edition);
+  if(!title) return null;
+
+  return games.find(g=>{
+    const gt=normalizeGameText(g.title);
+    const gp=normalizeGameText(g.platform);
+    const ge=normalizeGameText(g.edition);
+    if(gt!==title || (platform && gp && gp!==platform)) return false;
+    if(edition && ge && edition!==ge) return false;
+    return true;
+  }) || null;
+}
+function duplicateChoice(existing){
+  return new Promise(resolve=>{
+    const qty=Number(existing.quantity||1);
+    const ok=confirm(
+      `⚠️ Ce jeu est déjà dans ta collection.\n\n`+
+      `${existing.title||""}${existing.platform?" — "+existing.platform:""}\n`+
+      `Quantité actuelle : ${qty}\n\n`+
+      `OK = ajouter un exemplaire\n`+
+      `Annuler = ne rien ajouter`
+    );
+    resolve(ok);
+  });
+}
+</script>
+
 </body>
 </html>
