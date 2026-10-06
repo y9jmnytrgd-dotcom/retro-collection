@@ -41,10 +41,10 @@ body:after{box-shadow:0 0 120px rgba(255,59,24,.18),0 0 220px rgba(168,60,255,.1
 @media(min-width:650px){.grid{grid-template-columns:repeat(3,1fr)}}@media(max-width:500px){.consoleGrid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(3,1fr)}.thumb{height:130px}}
 
 /* === COLLECTION ARCADE — mise en page inspirée du visuel de référence === */
-.arcadeHeader{display:grid;grid-template-columns:230px 1fr auto;gap:16px;align-items:center;margin-bottom:10px}
+.arcadeHeader{display:grid;grid-template-columns:230px minmax(280px,560px) auto;gap:16px;align-items:center;justify-content:center;margin-bottom:10px}
 .arcadeLogo{font-weight:1000;font-style:italic;font-size:25px;line-height:.9;letter-spacing:-1.5px;text-transform:uppercase;color:#fff;text-shadow:3px 3px 0 #5b0812,0 0 18px #ff3b18}
 .arcadeLogo span{display:block;color:#ffd21c}
-.arcadeSearch{height:44px;border:1px solid #6c4caa;border-radius:18px;background:#0b0712;color:#fff;padding:0 16px;box-shadow:inset 0 0 20px #0008,0 0 18px #8c38ff20}
+.arcadeSearch{width:100%;justify-self:center;height:44px;border:1px solid #6c4caa;border-radius:18px;background:#0b0712;color:#fff;padding:0 16px;box-shadow:inset 0 0 20px #0008,0 0 18px #8c38ff20}
 .arcadeTools{display:flex;gap:8px}.arcadeTool{height:42px;border:0;border-radius:13px;background:#130b1d;color:#fff;padding:0 12px;font-weight:800;border:1px solid #39265a}
 .arcadeTabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:5px;border:1px solid #8c1740;border-radius:20px;background:#0d0713;box-shadow:0 0 25px #ff173b22;margin-bottom:14px}
 .arcadeTabs button{border:0;background:transparent;color:#cdbed6;padding:11px;border-radius:15px;font-weight:900;cursor:pointer}
@@ -149,8 +149,8 @@ function render(){
 }
 function header(){return `<header><div class="logo">RETRO <span>COLLECTION</span></div><button class="iconbtn" onclick="openAdd()">＋</button></header>`}
 function collectionHTML(){
- const q=window._q||'', p=window._p||'Tous';
- let list=games.filter(g=>(!q||`${g.title} ${g.platform} ${g.edition}`.toLowerCase().includes(q.toLowerCase()))&&(p==='Tous'||g.platform===p));
+ const q=window._q||'', p=window._p||'Tous', c=window._c||'Tous';
+ let list=games.filter(g=>(!q||`${g.title} ${g.platform} ${g.edition}`.toLowerCase().includes(q.toLowerCase()))&&(p==='Tous'||g.platform===p)&&(c==='Tous'||g.condition===c));
  list.sort((a,b)=>(a.title||'').localeCompare(b.title||''));
  if(!selectedGameId || !list.some(g=>g.id===selectedGameId)) selectedGameId=list[0]?.id||games[0]?.id||null;
  const selected=games.find(g=>g.id===selectedGameId)||list[0];
@@ -168,7 +168,7 @@ function collectionHTML(){
   <aside class="arcadeRail"><button class="active"><span class="railIcon">🎮</span>Jeux</button><button onclick="page='consoles';render()"><span class="railIcon">🕹️</span>Consoles</button><button onclick="page='stats';render()"><span class="railIcon">📊</span>Statistiques</button><button onclick="page='backup';render()"><span class="railIcon">☁️</span>Sauvegarde</button><button onclick="page='settings';render()"><span class="railIcon">⚙️</span>Paramètres</button></aside>
   <main class="collectionMain">
    <div class="collectionHeading"><div><h1>MA COLLECTION</h1><p>Chaque jeu a son histoire. Collectionne-les tous. 🎮</p></div><button class="collectionAdd" onclick="openAdd()">＋ Ajouter un jeu</button></div>
-   <div class="arcadeFilters"><select id="platformFilter"><option>Tous les consoles</option><option>Tous</option>${platforms.map(x=>`<option ${p===x?'selected':''}>${escapeHtml(x)}</option>`).join('')}</select><select><option>Tous les états</option></select><input class="wide" id="collectionSearch" placeholder="Rechercher dans ma collection…" value="${escapeHtml(q)}"></div>
+   <div class="arcadeFilters"><select id="platformFilter"><option>Tous les consoles</option><option>Tous</option>${platforms.map(x=>`<option ${p===x?'selected':''}>${escapeHtml(x)}</option>`).join('')}</select><select id="conditionFilter"><option value="Tous" ${c==='Tous'?'selected':''}>Tous les états</option>${conditions.map(x=>`<option value="${escapeHtml(x)}" ${c===x?'selected':''}>${escapeHtml(x)}</option>`).join('')}</select><input class="wide" id="collectionSearch" placeholder="Rechercher dans ma collection…" value="${escapeHtml(q)}"></div>
    ${list.length?`<div class="arcadeGrid">${list.map(arcadeCard).join('')}</div>`:`<div class="empty">Aucun jeu ici.<br><br>Appuie sur « Ajouter un jeu » pour commencer.</div>`}
    <div class="bottomSummary"><div><div class="summaryTitle">Ma collection en chiffres</div><div class="summaryStats"><div class="summaryStat"><b>🎮 ${games.length}</b><span>Jeux</span></div><div class="summaryStat"><b>🕹️ ${consoles.length}</b><span>Consoles</span></div><div class="summaryStat"><b>${euro(val)}</b><span>Valeur estimée</span></div></div></div><div class="platformBars"><div class="summaryTitle">Répartition par valeur</div>${topPlatforms.map(([k,v])=>`<div class="platformBar"><span>${escapeHtml(k)}</span><i style="width:${Math.max(8,Math.round(v/max*100))}%"></i><b>${euro(v)}</b></div>`).join('')||'<div class="meta">Ajoute des jeux pour voir la répartition.</div>'}</div></div>
   </main>
@@ -207,7 +207,7 @@ function openGameSheet(id){
 }
 async function addExemplar(id){const g=games.find(x=>x.id===id);if(!g)return;g.quantity=Math.max(1,Number(g.quantity)||1)+1;g.updatedAt=new Date().toISOString();await putGame(g);await refresh();selectedGameId=id;toast('Exemplaire ajouté à la collection')}
 async function deleteSelectedGame(id){if(!confirm('Supprimer définitivement ce jeu ?'))return;await deleteGame(id);selectedGameId=null;await refresh();toast('Jeu supprimé')}
-function bindCollection(){const s=$('#search'), s2=$('#collectionSearch'), f=$('#platformFilter');const onSearch=e=>{window._q=e.target.value;render()};if(s)s.oninput=onSearch;if(s2)s2.oninput=onSearch;if(f)f.onchange=()=>{window._p=(f.value==='Tous les consoles'||f.value==='Tous')?'Tous':f.value;render()}}
+function bindCollection(){const s=$('#search'), s2=$('#collectionSearch'), f=$('#platformFilter'), cf=$('#conditionFilter');const onSearch=e=>{window._q=e.target.value;render()};if(s)s.oninput=onSearch;if(s2)s2.oninput=onSearch;if(f)f.onchange=()=>{window._p=(f.value==='Tous les consoles'||f.value==='Tous')?'Tous':f.value;render()};if(cf)cf.onchange=()=>{window._c=cf.value||'Tous';render()}}
 function consoleSearchUrl(c){return 'https://www.vinted.fr/catalog?search_text='+encodeURIComponent([c.name,c.model,c.edition].filter(Boolean).join(' '))}
 function consoleEbayUrl(c){return 'https://www.ebay.fr/sch/i.html?_nkw='+encodeURIComponent([c.name,c.model,c.edition].filter(Boolean).join(' '))}
 function consolesHTML(){const q=window._cq||'';let list=consoles.filter(c=>(!q||`${c.name} ${c.model} ${c.edition}`.toLowerCase().includes(q.toLowerCase())));return `<div class="app">${header()}<section class="hero street"><span class="streetBadge">⚡ FIGHT • COLLECT • REPEAT ⚡</span><h1>🕹️ MES CONSOLES</h1><p>Garde aussi une trace de tes machines, éditions et valeurs.</p><button class="primary" onclick="openConsoleEditor()">＋ Ajouter une console</button></section><div class="toolbar"><input class="search" id="consoleSearch" placeholder="Rechercher une console…" value="${escapeHtml(q)}"></div><div class="consoleGrid">${list.map(consoleCard).join('')||'<div class="empty" style="grid-column:1/-1">Aucune console enregistrée.</div>'}</div></div>`}
