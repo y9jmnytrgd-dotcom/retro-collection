@@ -23,7 +23,7 @@ header{display:flex;justify-content:space-between;align-items:center;padding:18p
 .primary{width:100%;border:2px solid #ff7b18;background:linear-gradient(135deg,#ff2412,#9b0b16 52%,#ffb300);color:white;padding:15px;border-radius:12px;font-weight:1000;letter-spacing:.7px;text-transform:uppercase;margin-top:16px;box-shadow:0 8px 0 #5e0808,0 15px 30px #0008;transform:skew(-2deg);text-shadow:2px 2px 0 #000}
 .toolbar{display:flex;gap:9px;margin:14px 0}.search{flex:1;background:var(--panel);border:1px solid var(--border);color:var(--text);padding:13px 15px;border-radius:15px;outline:none}
 select{background:var(--panel);border:1px solid var(--border);color:var(--text);padding:12px;border-radius:15px;max-width:145px}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.card{background:linear-gradient(145deg,#180a1e,#0d0714);border:2px solid #552039;border-radius:14px;overflow:hidden;box-shadow:0 12px 30px #000a,0 0 18px #ff2b1610;transition:.18s transform,.18s border-color}.card:hover{transform:translateY(-3px) skew(-.5deg);border-color:#ff4b28}.thumb{width:100%;aspect-ratio:1/1;object-fit:cover;background:#20202b}.cardbody{padding:12px}.title{font-weight:800;line-height:1.2}.meta{font-size:12px;color:var(--muted);margin-top:5px}.price{margin-top:10px;font-weight:1000;font-size:18px;color:var(--price);text-shadow:0 0 12px #48f0a055}.tag{display:inline-block;font-size:11px;background:var(--panel2);padding:4px 7px;border-radius:8px;color:#cfd0db;margin-top:7px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.card{background:linear-gradient(145deg,#180a1e,#0d0714);border:2px solid #552039;border-radius:14px;overflow:hidden;box-shadow:0 12px 30px #000a,0 0 18px #ff2b1610;transition:.18s transform,.18s border-color}.card:hover{transform:translateY(-3px) skew(-.5deg);border-color:#ff4b28}.thumb{width:100%;aspect-ratio:1/1;object-fit:cover;background:#20202b}.cardbody{padding:12px}.title{font-weight:800;line-height:1.2}.meta{font-size:12px;color:var(--muted);margin-top:5px}.price{margin-top:10px;font-weight:1000;font-size:18px;color:var(--price);text-shadow:0 0 12px #48f0a055}.estimateBox{margin-top:10px;padding:10px;border:1px solid #6b3d20;border-radius:12px;background:linear-gradient(135deg,#1b0b12,#120b18)}.estimateTitle{font-size:11px;color:#ffd21a;font-weight:900;text-transform:uppercase;letter-spacing:.5px}.estimateMain{font-size:21px;font-weight:1000;color:#48f0a0;margin-top:3px}.estimateRange{font-size:11px;color:var(--muted);margin-top:3px}.estimateBtn{margin-top:8px;width:100%;border:1px solid #ff7b18;background:#2a1017;color:white;padding:8px;border-radius:10px;font-weight:800}.tag{display:inline-block;font-size:11px;background:var(--panel2);padding:4px 7px;border-radius:8px;color:#cfd0db;margin-top:7px}
 .empty{text-align:center;padding:35px 16px;color:var(--muted);border:1px dashed var(--border);border-radius:20px}
 nav{position:fixed;left:50%;transform:translateX(-50%);bottom:10px;width:min(96%,620px);background:rgba(18,5,7,.96);backdrop-filter:blur(18px);border:1px solid var(--border);border-radius:22px;padding:7px;display:grid;grid-template-columns:repeat(5,1fr);z-index:20;box-shadow:var(--shadow)}nav button{border:0;background:transparent;color:var(--muted);padding:9px 4px;border-radius:15px;font-size:11px}nav button.active{background:linear-gradient(135deg,#ff2b16,#7d1020);color:white;box-shadow:0 0 18px #ff2b1644}nav .ico{display:block;font-size:19px;margin-bottom:2px}
 dialog{width:min(94%,620px);max-height:90vh;border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:23px;padding:0;box-shadow:0 30px 80px #000b}dialog::backdrop{background:#000b}.modal{padding:18px;overflow:auto;max-height:90vh}.modal h2{margin:0 0 14px}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{margin:10px 0}.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}.field input,.field textarea,.field select{width:100%;max-width:none;background:#0e0e15;border:1px solid var(--border);color:var(--text);padding:12px;border-radius:13px}.field textarea{min-height:85px;resize:vertical}.preview{width:100%;max-height:300px;object-fit:contain;border-radius:16px;background:#0b0b10;margin-bottom:10px}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px}.actions button{flex:1;min-width:130px;padding:12px;border-radius:13px;border:1px solid var(--border);background:var(--panel2);color:var(--text);font-weight:700}.actions .ok{background:var(--accent);border-color:var(--accent)}.actions .danger{color:#fecaca;border-color:#5a2020}.hint{font-size:12px;color:var(--muted);line-height:1.45}.loader{display:inline-block;width:16px;height:16px;border:2px solid #ffffff55;border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;vertical-align:-3px}@keyframes spin{to{transform:rotate(360deg)}}
@@ -104,7 +104,7 @@ function collectionHTML(){
  ${list.length?`<div class="grid">${list.map(card).join('')}</div>`:`<div class="empty">Aucun jeu ici.<br><br>Appuie sur « Ajouter un jeu par photo » pour commencer.</div>`}
  </div>`;
 }
-function card(g){return `<article class="card" onclick="editGame('${g.id}')">${g.image?`<img class="thumb" src="${g.image}" alt="">`:`<div class="thumb"></div>`}<div class="cardbody"><div class="title">${escapeHtml(g.title||'Jeu sans titre')}</div><div class="meta">${escapeHtml(g.platform||'Console inconnue')}${g.edition?' · '+escapeHtml(g.edition):''}</div><span class="tag">${escapeHtml(g.condition||'État non renseigné')} · x${g.quantity||1}</span><div class="price">${g.price!==''&&g.price!=null?euro(Number(g.price)*(Number(g.quantity)||1)):'Prix inconnu'}</div></div></article>`}
+function card(g){const est=g.estimate;return `<article class="card" onclick="editGame('${g.id}')">${g.image?`<img class="thumb" src="${g.image}" alt="">`:`<div class="thumb"></div>`}<div class="cardbody"><div class="title">${escapeHtml(g.title||'Jeu sans titre')}</div><div class="meta">${escapeHtml(g.platform||'Console inconnue')}${g.edition?' · '+escapeHtml(g.edition):''}</div><span class="tag">${escapeHtml(g.condition||'État non renseigné')} · x${g.quantity||1}</span><div class="price">${g.price!==''&&g.price!=null?euro(Number(g.price)*(Number(g.quantity)||1)):'Prix personnel non renseigné'}</div>${est?.typical!=null?`<div class="estimateBox"><div class="estimateTitle">🤖 Estimation automatique</div><div class="estimateMain">${euro(est.typical)}</div><div class="estimateRange">${euro(est.low)} – ${euro(est.high)} · ${est.count||0} prix analysés</div></div>`:''}<button class="estimateBtn" onclick="event.stopPropagation();estimateGame('${g.id}')">🔎 ${est?'Actualiser':'Estimer la valeur'}</button></div></article>`}
 function bindCollection(){const s=$('#search'), f=$('#platformFilter');if(s)s.oninput=()=>{window._q=s.value;render()};if(f)f.onchange=()=>{window._p=f.value;render()}}
 function consoleSearchUrl(c){return 'https://www.vinted.fr/catalog?search_text='+encodeURIComponent([c.name,c.model,c.edition].filter(Boolean).join(' '))}
 function consoleEbayUrl(c){return 'https://www.ebay.fr/sch/i.html?_nkw='+encodeURIComponent([c.name,c.model,c.edition].filter(Boolean).join(' '))}
@@ -148,7 +148,7 @@ async function recognizePhoto(){
  }
 }
 function openEditor(g={}){
- editingId=g.id||null;
+ editingId=g.id||null; window._pendingEstimate=g.estimate||null;
  const d=$('#gameDialog');$('#gameModal').innerHTML=`<h2>${editingId?'Modifier le jeu':'Vérifier le jeu'}</h2>
  <img class="preview" src="${g.image||''}" ${g.image?'':'style="display:none"'}>
  <div class="field"><label>Titre</label><input id="fTitle" value="${escapeHtml(g.title||'')}"></div>
@@ -156,16 +156,45 @@ function openEditor(g={}){
  <div class="field"><label>Année</label><input id="fYear" type="number" value="${g.year||''}"></div></div>
  <div class="field"><label>Édition / version</label><input id="fEdition" value="${escapeHtml(g.edition||'')}"></div>
  <div class="field"><label>État</label><select id="fCondition">${conditions.map(x=>`<option ${g.condition===x?'selected':''}>${escapeHtml(x)}</option>`).join('')}</select></div>
- <div class="row"><div class="field"><label>Quantité</label><input id="fQty" type="number" min="1" value="${g.quantity||1}"></div><div class="field"><label>Prix estimé (€)</label><input id="fPrice" type="number" min="0" step="0.01" value="${g.price??''}"></div></div>
+ <div class="row"><div class="field"><label>Quantité</label><input id="fQty" type="number" min="1" value="${g.quantity||1}"></div><div class="field"><label>Prix personnel (€)</label><input id="fPrice" type="number" min="0" step="0.01" value="${g.price??''}"></div></div>${g.estimate?.typical!=null?`<div class="estimateBox"><div class="estimateTitle">🤖 Estimation automatique</div><div class="estimateMain">${euro(g.estimate.typical)}</div><div class="estimateRange">${euro(g.estimate.low)} – ${euro(g.estimate.high)} · ${g.estimate.count||0} prix analysés</div></div>`:''}
  <div class="field"><label>Date de l'estimation</label><input id="fPriceDate" type="date" value="${g.priceDate||''}"></div>
  <div class="field"><label>Notes</label><textarea id="fNotes">${escapeHtml(g.notes||'')}</textarea></div>
  <p class="hint">Confiance IA : ${escapeHtml(g.confidence||'non indiquée')}. Corrige librement les informations avant d'enregistrer.</p>
- <div class="actions"><button onclick="gameDialog.close()">Annuler</button>${g.title?`<button onclick="window.open(vintedUrlFromForm(), '_blank')">🟢 Vinted</button>`:''}${g.title?`<button onclick="window.open(ebayUrlFromForm(), '_blank')">🔎 eBay</button>`:''}<button class="ok" onclick="saveEditor()">💾 Enregistrer</button>${editingId?'<button class="danger" onclick="removeEditing()">🗑️ Supprimer</button>':''}</div>`;
+ <div class="actions"><button onclick="gameDialog.close()">Annuler</button>${g.title?`<button onclick="window.open(vintedUrlFromForm(), '_blank')">🟢 Vinted</button>`:''}${g.title?`<button onclick="window.open(ebayUrlFromForm(), '_blank')">🔎 eBay</button>`:''}<button onclick="estimateEditingGame()">🤖 Estimer la valeur</button><button class="ok" onclick="saveEditor()">💾 Enregistrer</button>${editingId?'<button class="danger" onclick="removeEditing()">🗑️ Supprimer</button>':''}</div>`;
  d.showModal();
 }
 const gameDialog=$('#gameDialog');
-async function saveEditor(){const old=editingId?games.find(x=>x.id===editingId):null;const g={id:editingId||crypto.randomUUID(),image:old?.image||pendingImage,title:$('#fTitle').value.trim(),platform:$('#fPlatform').value.trim(),year:$('#fYear').value||'',edition:$('#fEdition').value.trim(),condition:$('#fCondition').value,quantity:Math.max(1,Number($('#fQty').value)||1),price:$('#fPrice').value===''?'':Number($('#fPrice').value),priceDate:$('#fPriceDate').value,notes:$('#fNotes').value.trim(),updatedAt:new Date().toISOString()};await putGame(g);gameDialog.close();pendingImage='';await refresh();toast('Jeu enregistré')}
+async function saveEditor(){const old=editingId?games.find(x=>x.id===editingId):null;const g={id:editingId||crypto.randomUUID(),image:old?.image||pendingImage,title:$('#fTitle').value.trim(),platform:$('#fPlatform').value.trim(),year:$('#fYear').value||'',edition:$('#fEdition').value.trim(),condition:$('#fCondition').value,quantity:Math.max(1,Number($('#fQty').value)||1),price:$('#fPrice').value===''?'':Number($('#fPrice').value),priceDate:$('#fPriceDate').value,notes:$('#fNotes').value.trim(),estimate:window._pendingEstimate||old?.estimate||null,updatedAt:new Date().toISOString()};await putGame(g);gameDialog.close();pendingImage='';window._pendingEstimate=null;await refresh();toast('Jeu enregistré')}
 async function editGame(id){const g=games.find(x=>x.id===id);if(g)openEditor(g)}
+async function estimateEditingGame(){
+ const g={id:editingId,title:$('#fTitle')?.value.trim(),platform:$('#fPlatform')?.value.trim(),year:$('#fYear')?.value||'',edition:$('#fEdition')?.value.trim(),condition:$('#fCondition')?.value||''};
+ if(!g.title){toast('Indique d’abord le titre du jeu.');return}
+ await estimateGameData(g,true);
+}
+async function estimateGame(id){const g=games.find(x=>x.id===id);if(g)await estimateGameData(g,false)}
+async function estimateGameData(g,fromEditor){
+ const url=localStorage.getItem('retro_api_url');
+ if(!url){toast('Configure d’abord l’URL du serveur dans Réglages.');return}
+ toast('Recherche des prix en ligne…');
+ try{
+   const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),60000);
+   const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'estimate',game:{title:g.title,platform:g.platform,year:g.year,edition:g.edition,condition:g.condition}}),signal:controller.signal});
+   clearTimeout(timer);
+   const raw=await r.text();let data={};try{data=raw?JSON.parse(raw):{}}catch{}
+   if(!r.ok)throw new Error(data.error||`Erreur serveur HTTP ${r.status}`);
+   if(!Number.isFinite(Number(data.typical)))throw new Error('Aucune estimation exploitable n’a été trouvée.');
+   if(fromEditor){
+     const old=editingId?games.find(x=>x.id===editingId):null;
+     const est={low:Number(data.low),typical:Number(data.typical),high:Number(data.high),count:Number(data.count)||0,updatedAt:new Date().toISOString(),sources:Array.isArray(data.sources)?data.sources:[]};
+     if(old) old.estimate=est;
+     $('#gameModal').insertAdjacentHTML('beforeend',`<div class="estimateBox"><div class="estimateTitle">🤖 Estimation automatique</div><div class="estimateMain">${euro(est.typical)}</div><div class="estimateRange">${euro(est.low)} – ${euro(est.high)} · ${est.count} prix analysés</div></div>`);
+     window._pendingEstimate=est;
+     toast('Estimation trouvée');
+   }else{
+     const idx=games.findIndex(x=>x.id===g.id);if(idx>=0){games[idx].estimate={low:Number(data.low),typical:Number(data.typical),high:Number(data.high),count:Number(data.count)||0,updatedAt:new Date().toISOString(),sources:Array.isArray(data.sources)?data.sources:[]};await putGame(games[idx]);await refresh();toast('Estimation enregistrée');}
+   }
+ }catch(e){toast(e.name==='AbortError'?'La recherche prend trop de temps.':('Estimation impossible : '+e.message))}
+}
 async function removeEditing(){if(!editingId)return;if(confirm('Supprimer définitivement ce jeu ?')){await deleteGame(editingId);gameDialog.close();await refresh();toast('Jeu supprimé')}}
 function vintedUrl(g){return 'https://www.vinted.fr/catalog?search_text='+encodeURIComponent([g.title,g.platform,g.edition].filter(Boolean).join(' '))}
 function vintedUrlFromForm(){return vintedUrl({title:$('#fTitle')?.value||'',platform:$('#fPlatform')?.value||'',edition:$('#fEdition')?.value||''})}
