@@ -89,6 +89,10 @@ box-shadow:0 0 0 3px #140307,0 18px 45px #ff3b1828;margin-bottom:13px}
 @media(max-width:650px){.gameSheet .detailActions{grid-template-columns:1fr}.gameSheet .detailAction.primary,.gameSheet .detailAction.danger{grid-column:auto}.gameSheet .detailPhoto{height:190px}.arcadeHeader{grid-template-columns:1fr auto}.arcadeLogo{font-size:20px}.arcadeShell{display:block}.arcadeRail{display:none}.arcadeGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.arcadeThumb{height:125px}.collectionHeading{align-items:center}.collectionHeading h1{font-size:25px}.collectionHeading p{font-size:11px}.collectionAdd{font-size:0;padding:11px 13px}.collectionAdd:after{content:"＋";font-size:22px}.arcadeFilters{grid-template-columns:1fr 1fr}.arcadeFilters .wide{grid-column:1/-1}.detailPanel{margin-top:12px}.fightBanner{height:105px}.fightWord{font-size:58px}.fighter{width:100px;height:100px}.bottomSummary{grid-template-columns:1fr}.platformBars{border-left:0;border-top:1px solid #33223d;padding:10px 0 0}.summaryStats{gap:4px}}
 
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:92px;background:#21102b;color:white;border:1px solid #693171;padding:11px 15px;border-radius:13px;z-index:50;box-shadow:var(--shadow);max-width:90%;font-size:13px}
+
+.backTop{border:1px solid #ff6b42;background:linear-gradient(135deg,#2a102f,#54132c);color:#fff;border-radius:14px;padding:10px 14px;font-weight:900;cursor:pointer;box-shadow:0 0 18px #ff3b1830;white-space:nowrap}
+.backTop:hover{transform:translateY(-1px);box-shadow:0 0 24px #ff3b1860}
+@media(max-width:650px){.backTop{padding:9px 11px;font-size:13px}.arcadeHeader{grid-template-columns:auto 1fr auto}.arcadeLogo{font-size:15px}}
 </style>
 </head>
 <body>
@@ -147,7 +151,14 @@ function render(){
  if(page==='collection') bindCollection();
  if(page==='consoles') bindConsoles();
 }
-function header(){return `<header><div class="logo">RETRO <span>COLLECTION</span></div><button class="iconbtn" onclick="openAdd()">＋</button></header>`}
+function goBack(){
+  if(page!=='collection'){page='collection';render();return}
+  if(window.history.length>1) window.history.back();
+}
+function header(){
+  const back=page!=='collection'?`<button class="backTop" onclick="goBack()">← Retour</button>`:'';
+  return `<header>${back}<div class="logo">RETRO <span>COLLECTION</span></div><button class="iconbtn" onclick="openAdd()">＋</button></header>`;
+}
 function collectionHTML(){
  const q=window._q||'', p=window._p||'Tous', c=window._c||'Tous';
  let list=games.filter(g=>(!q||`${g.title} ${g.platform} ${g.edition}`.toLowerCase().includes(q.toLowerCase()))&&(p==='Tous'||g.platform===p)&&(c==='Tous'||g.condition===c));
