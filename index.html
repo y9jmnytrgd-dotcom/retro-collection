@@ -104,7 +104,7 @@ function collectionHTML(){
  ${list.length?`<div class="grid">${list.map(card).join('')}</div>`:`<div class="empty">Aucun jeu ici.<br><br>Appuie sur « Ajouter un jeu par photo » pour commencer.</div>`}
  </div>`;
 }
-function card(g){const est=g.estimate;return `<article class="card" onclick="editGame('${g.id}')">${g.image?`<img class="thumb" src="${g.image}" alt="">`:`<div class="thumb"></div>`}<div class="cardbody"><div class="title">${escapeHtml(g.title||'Jeu sans titre')}</div><div class="meta">${escapeHtml(g.platform||'Console inconnue')}${g.edition?' · '+escapeHtml(g.edition):''}</div><span class="tag">${escapeHtml(g.condition||'État non renseigné')} · x${g.quantity||1}</span><div class="price">${g.price!==''&&g.price!=null?euro(Number(g.price)*(Number(g.quantity)||1)):'Prix personnel non renseigné'}</div>${est?.typical!=null?`<div class="estimateBox"><div class="estimateTitle">🤖 Estimation automatique</div><div class="estimateMain">${euro(est.typical)}</div><div class="estimateRange">${euro(est.low)} – ${euro(est.high)} · ${est.count||0} prix analysés</div></div>`:''}<button class="estimateBtn" onclick="event.stopPropagation();estimateGame('${g.id}')">🔎 ${est?'Actualiser':'Estimer la valeur'}</button></div></article>`}
+function card(g){const est=g.estimate;return `<article class="card" onclick="editGame('${g.id}')">${g.image?`<img class="thumb" src="${g.image}" alt="">`:`<div class="thumb"></div>`}<div class="cardbody"><div class="title">${escapeHtml(g.title||'Jeu sans titre')}</div><div class="meta">${escapeHtml(g.platform||'Console inconnue')}${g.edition?' · '+escapeHtml(g.edition):''}</div><span class="tag">${escapeHtml(g.condition||'État non renseigné')} · x${g.quantity||1}</span><div class="price">${g.price!==''&&g.price!=null?euro(Number(g.price)*(Number(g.quantity)||1)):'Prix personnel non renseigné'}</div>${est?.typical!=null?`<div class="estimateBox"><div class="estimateTitle">🤖 Estimation automatique</div><div class="estimateMain">${euro(est.typical)}</div><div class="estimateRange">${euro(est.low)} – ${euro(est.high)} · ${est.count||0} prix analysés</div>${est.updatedAt?`<div class="hint">📅 ${new Intl.DateTimeFormat('fr-FR').format(new Date(est.updatedAt))}</div>`:''} </div>`:''}<button class="estimateBtn" onclick="event.stopPropagation();estimateGame('${g.id}')">🔎 ${est?'Actualiser':'Estimer la valeur'}</button></div></article>`}
 function bindCollection(){const s=$('#search'), f=$('#platformFilter');if(s)s.oninput=()=>{window._q=s.value;render()};if(f)f.onchange=()=>{window._p=f.value;render()}}
 function consoleSearchUrl(c){return 'https://www.vinted.fr/catalog?search_text='+encodeURIComponent([c.name,c.model,c.edition].filter(Boolean).join(' '))}
 function consoleEbayUrl(c){return 'https://www.ebay.fr/sch/i.html?_nkw='+encodeURIComponent([c.name,c.model,c.edition].filter(Boolean).join(' '))}
@@ -173,27 +173,91 @@ async function estimateEditingGame(){
 }
 async function estimateGame(id){const g=games.find(x=>x.id===id);if(g)await estimateGameData(g,false)}
 async function estimateGameData(g,fromEditor){
- const url=localStorage.getItem('retro_api_url');
- if(!url){toast('Configure d’abord l’URL du serveur dans Réglages.');return}
- toast('Recherche des prix en ligne…');
- try{
-   const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),60000);
-   const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'estimate',game:{title:g.title,platform:g.platform,year:g.year,edition:g.edition,condition:g.condition}}),signal:controller.signal});
-   clearTimeout(timer);
-   const raw=await r.text();let data={};try{data=raw?JSON.parse(raw):{}}catch{}
-   if(!r.ok)throw new Error(data.error||`Erreur serveur HTTP ${r.status}`);
-   if(!Number.isFinite(Number(data.typical)))throw new Error('Aucune estimation exploitable n’a été trouvée.');
-   if(fromEditor){
-     const old=editingId?games.find(x=>x.id===editingId):null;
-     const est={low:Number(data.low),typical:Number(data.typical),high:Number(data.high),count:Number(data.count)||0,updatedAt:new Date().toISOString(),sources:Array.isArray(data.sources)?data.sources:[]};
-     if(old) old.estimate=est;
-     $('#gameModal').insertAdjacentHTML('beforeend',`<div class="estimateBox"><div class="estimateTitle">🤖 Estimation automatique</div><div class="estimateMain">${euro(est.typical)}</div><div class="estimateRange">${euro(est.low)} – ${euro(est.high)} · ${est.count} prix analysés</div></div>`);
-     window._pendingEstimate=est;
-     toast('Estimation trouvée');
-   }else{
-     const idx=games.findIndex(x=>x.id===g.id);if(idx>=0){games[idx].estimate={low:Number(data.low),typical:Number(data.typical),high:Number(data.high),count:Number(data.count)||0,updatedAt:new Date().toISOString(),sources:Array.isArray(data.sources)?data.sources:[]};await putGame(games[idx]);await refresh();toast('Estimation enregistrée');}
-   }
- }catch(e){toast(e.name==='AbortError'?'La recherche prend trop de temps.':('Estimation impossible : '+e.message))}
+  const url=localStorage.getItem('retro_api_url');
+  if(!url){toast('Configure d’abord l’URL du serveur dans Réglages.');return}
+  toast('Recherche des prix en ligne…');
+  try{
+    const controller=new AbortController();
+    const timer=setTimeout(()=>controller.abort(),60000);
+    const r=await fetch(url,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        action:'estimate',
+        game:{
+          title:g.title,
+          platform:g.platform,
+          year:g.year,
+          edition:g.edition,
+          condition:g.condition
+        }
+      }),
+      signal:controller.signal
+    });
+    clearTimeout(timer);
+
+    const raw=await r.text();
+    let data={};
+    try{data=raw?JSON.parse(raw):{}}catch{}
+
+    if(!r.ok)throw new Error(data.error||`Erreur serveur HTTP ${r.status}`);
+    if(!Number.isFinite(Number(data.typical)))
+      throw new Error('Aucune estimation exploitable n’a été trouvée.');
+
+    const now=new Date();
+    const today=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+
+    const est={
+      low:Number(data.low),
+      typical:Number(data.typical),
+      high:Number(data.high),
+      count:Number(data.count)||0,
+      updatedAt:now.toISOString(),
+      sources:Array.isArray(data.sources)?data.sources:[]
+    };
+
+    if(fromEditor){
+      const old=editingId?games.find(x=>x.id===editingId):null;
+      if(old)old.estimate=est;
+
+      // La valeur estimée est automatiquement inscrite dans la case Prix.
+      const priceInput=$('#fPrice');
+      const dateInput=$('#fPriceDate');
+      if(priceInput)priceInput.value=String(est.typical);
+      if(dateInput)dateInput.value=today;
+
+      // Évite d'afficher plusieurs blocs d'estimation si on relance une recherche.
+      $('#gameModal .estimateBox')?.remove();
+
+      $('#gameModal').insertAdjacentHTML('beforeend',
+        `<div class="estimateBox">
+          <div class="estimateTitle">🤖 Estimation automatique</div>
+          <div class="estimateMain">${euro(est.typical)}</div>
+          <div class="estimateRange">${euro(est.low)} – ${euro(est.high)} · ${est.count} prix analysés</div>
+          <div class="hint">📅 Estimation du ${new Intl.DateTimeFormat('fr-FR').format(now)}</div>
+        </div>`
+      );
+
+      window._pendingEstimate=est;
+      toast('Valeur et date enregistrées dans la fiche');
+    }else{
+      const idx=games.findIndex(x=>x.id===g.id);
+      if(idx>=0){
+        games[idx].estimate=est;
+        // La valeur estimée devient automatiquement le prix enregistré.
+        games[idx].price=Number(est.typical);
+        games[idx].priceDate=today;
+
+        await putGame(games[idx]);
+        await refresh();
+        toast('Valeur et date enregistrées');
+      }
+    }
+  }catch(e){
+    toast(e.name==='AbortError'
+      ?'La recherche prend trop de temps.'
+      :('Estimation impossible : '+e.message));
+  }
 }
 async function removeEditing(){if(!editingId)return;if(confirm('Supprimer définitivement ce jeu ?')){await deleteGame(editingId);gameDialog.close();await refresh();toast('Jeu supprimé')}}
 function vintedUrl(g){return 'https://www.vinted.fr/catalog?search_text='+encodeURIComponent([g.title,g.platform,g.edition].filter(Boolean).join(' '))}
