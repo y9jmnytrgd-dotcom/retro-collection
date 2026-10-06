@@ -39,6 +39,55 @@ body:after{box-shadow:0 0 120px rgba(255,59,24,.18),0 0 220px rgba(168,60,255,.1
 .marketBtn{border:1px solid transparent!important;display:inline-flex!important;align-items:center;justify-content:center;gap:7px;text-decoration:none;padding:12px 15px!important;border-radius:14px!important;font-weight:1000!important;min-width:145px!important;transition:transform .18s,box-shadow .18s,filter .18s}.marketBtn:hover{transform:translateY(-2px) scale(1.02);filter:saturate(1.15)}.marketBtn.vinted{background:linear-gradient(135deg,#00cdb8,#00a7ff)!important;border-color:#37fff0!important;color:white!important;box-shadow:0 0 22px rgba(0,205,184,.3)}.marketBtn.ebay{background:linear-gradient(135deg,#e8003d,#ff8b00,#8c38ff)!important;border-color:#ff456f!important;color:white!important;box-shadow:0 0 22px rgba(255,59,24,.28)}.marketIcon{font-size:18px}.marketLabel{font-size:12px;letter-spacing:.3px}.marketHint{font-size:9px;opacity:.8;font-weight:700}
 @keyframes scanMove{to{background-position:0 180px,0 0}}@keyframes borderFlow{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}@keyframes sheen{0%,60%,100%{left:-40%;opacity:0}70%{left:115%;opacity:1}}
 @media(min-width:650px){.grid{grid-template-columns:repeat(3,1fr)}}@media(max-width:500px){.consoleGrid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(3,1fr)}.thumb{height:130px}}
+
+/* === COLLECTION ARCADE — mise en page inspirée du visuel de référence === */
+.arcadeHeader{display:grid;grid-template-columns:230px 1fr auto;gap:16px;align-items:center;margin-bottom:10px}
+.arcadeLogo{font-weight:1000;font-style:italic;font-size:25px;line-height:.9;letter-spacing:-1.5px;text-transform:uppercase;color:#fff;text-shadow:3px 3px 0 #5b0812,0 0 18px #ff3b18}
+.arcadeLogo span{display:block;color:#ffd21c}
+.arcadeSearch{height:44px;border:1px solid #6c4caa;border-radius:18px;background:#0b0712;color:#fff;padding:0 16px;box-shadow:inset 0 0 20px #0008,0 0 18px #8c38ff20}
+.arcadeTools{display:flex;gap:8px}.arcadeTool{height:42px;border:0;border-radius:13px;background:#130b1d;color:#fff;padding:0 12px;font-weight:800;border:1px solid #39265a}
+.arcadeTabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:5px;border:1px solid #8c1740;border-radius:20px;background:#0d0713;box-shadow:0 0 25px #ff173b22;margin-bottom:14px}
+.arcadeTabs button{border:0;background:transparent;color:#cdbed6;padding:11px;border-radius:15px;font-weight:900;cursor:pointer}
+.arcadeTabs button:first-child{background:linear-gradient(135deg,#ff2d12,#7d1020);color:#fff;box-shadow:0 0 18px #ff2d1260}
+.arcadeShell{display:grid;grid-template-columns:120px minmax(0,1fr) 315px;gap:16px;align-items:start}
+.arcadeRail{background:#0b0610;border:1px solid #54205c;border-radius:19px;overflow:hidden;box-shadow:0 15px 35px #0009}
+.arcadeRail button{width:100%;border:0;border-bottom:1px solid #2b1831;background:transparent;color:#d9cde0;padding:15px 7px;font-size:11px;font-weight:800;cursor:pointer}
+.arcadeRail button.active{background:linear-gradient(180deg,#ff2c16,#6f0d22);color:#fff;box-shadow:inset 0 0 20px #ff6a001f}
+.arcadeRail .railIcon{display:block;font-size:23px;margin-bottom:5px}
+.collectionMain{min-width:0}.collectionHeading{display:flex;justify-content:space-between;gap:12px;align-items:end;margin:5px 0 10px}
+.collectionHeading h1{margin:0;font-size:34px;font-weight:1000;font-style:italic;text-transform:uppercase;color:#ffd21c;text-shadow:3px 3px 0 #28030a,0 0 18px #ff7b0028}
+.collectionHeading p{margin:2px 0 0;font-weight:800;color:#fff1e7}
+.collectionAdd{border:2px solid #ff4b24;border-radius:17px;background:linear-gradient(90deg,#ff2d12,#ff8a00);color:#fff;padding:12px 18px;font-weight:1000;white-space:nowrap;box-shadow:0 0 25px #ff3b1840;cursor:pointer}
+.arcadeFilters{display:grid;grid-template-columns:1fr 1fr 1.3fr;gap:9px;margin-bottom:11px}
+.arcadeFilters>*{height:42px;border:1px solid #4f3a77;background:#0d0815;color:#fff;border-radius:12px;padding:0 12px}
+.arcadeGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.arcadeCard{position:relative;background:#080611;border:2px solid #ff2352;border-radius:18px;overflow:hidden;box-shadow:0 10px 25px #000b,0 0 18px #ff235222;cursor:pointer;transition:.2s}
+.arcadeCard:nth-child(3n+2){border-color:#ffb21a}.arcadeCard:nth-child(3n){border-color:#8d3cff}
+.arcadeCard:hover,.arcadeCard.selected{transform:translateY(-4px);box-shadow:0 15px 35px #000d,0 0 24px #ff3b1850}
+.arcadeCard.selected{outline:2px solid #ffd21c;outline-offset:2px}
+.arcadeThumb{position:relative;height:165px;background:#120a18;overflow:hidden}.arcadeThumb img{width:100%;height:100%;object-fit:cover;display:block}
+.arcadeThumb:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 55%,#05030a99);pointer-events:none}
+.arcadeEstimate{position:absolute;right:7px;bottom:7px;z-index:2;background:#07100dE8;border:1px solid #49f0a0;border-radius:8px;padding:3px 6px;color:#49f0a0;font-size:9px;font-weight:1000;line-height:1.05;box-shadow:0 0 10px #49f0a033}
+.arcadeEstimate small{display:block;color:#b9c9c2;font-size:7px;margin-top:2px}
+.arcadeCardBody{padding:9px 10px 11px}.arcadeTitle{font-weight:1000;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.arcadeMeta{font-size:11px;color:#cbbcd3;margin-top:3px}.arcadeTag{display:inline-block;margin-top:6px;padding:3px 6px;border-radius:7px;background:#173a3a;color:#d6fff3;font-size:9px;font-weight:900}.arcadePrice{margin-top:7px;color:#49f0a0;font-size:18px;font-weight:1000;text-shadow:0 0 12px #49f0a055}
+.detailPanel{position:sticky;top:12px;background:#080711;border:2px solid #ff2352;border-radius:22px;padding:10px;box-shadow:0 18px 40px #000d,0 0 25px #ff235225}
+.detailPhoto{position:relative;height:150px;border-radius:15px;overflow:hidden;border:1px solid #6336a2;background:#100815}.detailPhoto img{width:100%;height:100%;object-fit:cover}.detailEstimateMini{position:absolute;right:7px;bottom:7px;background:#07100de8;border:1px solid #49f0a0;border-radius:8px;padding:3px 6px;color:#49f0a0;font-size:9px;font-weight:1000}
+.detailTitle{font-size:21px;font-weight:1000;margin:9px 2px 2px}.detailMeta{font-size:12px;color:#cbbcd3}.detailRow{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-top:10px;padding:9px 10px;border:1px solid #3c2c51;border-radius:10px;background:#0f0b17}.detailRow b{color:#49f0a0;font-size:18px}.detailEstimate{margin-top:9px;padding:9px;border:1px solid #46305d;border-radius:11px;background:#0d0a14}.detailEstimateTitle{font-size:10px;color:#ffd21c;font-weight:1000;text-transform:uppercase}.detailEstimateMain{font-size:18px;font-weight:1000;color:#ffd21c}.detailEstimateRange{font-size:9px;color:#bfb2c8}.marketGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}.marketBig{height:55px;border-radius:15px;border:2px solid #fff;color:#fff;display:flex;align-items:center;justify-content:center;gap:7px;font-weight:1000;text-decoration:none;box-shadow:0 0 18px #0008;transition:.18s}.marketBig:hover{transform:translateY(-2px) scale(1.02)}.marketBig.vinted{background:linear-gradient(135deg,#00d2bd,#009dff);border-color:#40fff0;box-shadow:0 0 20px #00d2bd55}.marketBig.ebay{background:linear-gradient(135deg,#e9003e,#ff8a00,#8b38ff);border-color:#ff456f;box-shadow:0 0 20px #ff3b1850}.detailActions{display:grid;gap:7px;margin-top:9px}.detailAction{height:42px;border-radius:11px;border:1px solid #ff3b18;background:#120a16;color:#fff;font-weight:900;cursor:pointer}.detailAction.primary{background:linear-gradient(90deg,#ffb400,#ff7b00);color:#170600;border:0}.detailAction.danger{border-color:#a11d35;color:#ff7588}
+.bottomSummary{margin-top:15px;border:1px solid #8a1745;border-radius:18px;background:#090711;display:grid;grid-template-columns:1.1fr 1fr;padding:12px;gap:12px;box-shadow:0 0 25px #ff174522}.summaryTitle{color:#ffd21c;font-weight:1000;font-size:12px;text-transform:uppercase}.summaryStats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:7px}.summaryStat{text-align:center}.summaryStat b{display:block;color:#ffb11c;font-size:20px}.summaryStat span{font-size:9px;color:#bbaec3}.platformBars{border-left:1px solid #33223d;padding-left:14px}.platformBar{display:grid;grid-template-columns:75px 1fr 45px;gap:7px;align-items:center;margin:5px 0;font-size:9px}.platformBar i{height:8px;border-radius:99px;background:linear-gradient(90deg,#ff3b30,#ffbd1b,#a83cff);display:block}
+.fightBanner{position:relative;overflow:hidden;height:145px;border-radius:22px;border:2px solid #ff2b1a;background:
+radial-gradient(circle at 16% 70%,#ff8a00 0 3%,transparent 20%),
+radial-gradient(circle at 84% 35%,#a83cff 0 3%,transparent 22%),
+linear-gradient(115deg,#2b0307,#8b1011 35%,#17051d 65%,#39042e);
+box-shadow:0 0 0 3px #140307,0 18px 45px #ff3b1828;margin-bottom:13px}
+.fightBanner:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(125deg,transparent 0 25px,#ffb0001a 26px 28px,transparent 29px 55px),radial-gradient(circle at 50% 55%,#ffd21c44,transparent 22%);animation:bannerShift 7s linear infinite}
+.fightWord{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) skew(-8deg);font-size:clamp(52px,9vw,100px);font-weight:1000;font-style:italic;color:#ffd21c;text-shadow:5px 5px 0 #e22a0b,9px 9px 0 #33050b,0 0 30px #ff6a00;letter-spacing:-4px}
+.fighter{position:absolute;bottom:-18px;width:145px;height:145px;border-radius:50%;filter:blur(.2px);opacity:.95}
+.fighter.left{left:8px;background:radial-gradient(circle at 60% 30%,#ffd0a0 0 9%,transparent 10%),radial-gradient(circle at 50% 45%,#ffdfc2 0 13%,transparent 14%),linear-gradient(135deg,transparent 35%,#ff2d12 36% 68%,transparent 69%);clip-path:polygon(0 100%,8% 50%,28% 40%,35% 15%,55% 8%,72% 22%,90% 20%,100% 45%,82% 58%,78% 100%)}
+.fighter.right{right:8px;background:radial-gradient(circle at 45% 28%,#ffd0a0 0 9%,transparent 10%),radial-gradient(circle at 50% 45%,#ffdfc2 0 13%,transparent 14%),linear-gradient(225deg,transparent 35%,#ff8a00 36% 68%,transparent 69%);clip-path:polygon(0 45%,18% 20%,35% 22%,45% 8%,65% 15%,72% 40%,92% 50%,100% 100%,22% 100%,20% 58%)}
+@keyframes bannerShift{to{background-position:220px 0,0 0}} 
+@media(max-width:980px){.arcadeShell{grid-template-columns:90px minmax(0,1fr)}.detailPanel{grid-column:2;position:relative}.arcadeGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.arcadeHeader{grid-template-columns:1fr auto}.arcadeSearch{grid-column:1/-1;grid-row:2}}
+@media(max-width:650px){.arcadeHeader{grid-template-columns:1fr auto}.arcadeLogo{font-size:20px}.arcadeShell{display:block}.arcadeRail{display:none}.arcadeGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.arcadeThumb{height:125px}.collectionHeading{align-items:center}.collectionHeading h1{font-size:25px}.collectionHeading p{font-size:11px}.collectionAdd{font-size:0;padding:11px 13px}.collectionAdd:after{content:"＋";font-size:22px}.arcadeFilters{grid-template-columns:1fr 1fr}.arcadeFilters .wide{grid-column:1/-1}.detailPanel{margin-top:12px}.fightBanner{height:105px}.fightWord{font-size:58px}.fighter{width:100px;height:100px}.bottomSummary{grid-template-columns:1fr}.platformBars{border-left:0;border-top:1px solid #33223d;padding:10px 0 0}.summaryStats{gap:4px}}
+
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:92px;background:#21102b;color:white;border:1px solid #693171;padding:11px 15px;border-radius:13px;z-index:50;box-shadow:var(--shadow);max-width:90%;font-size:13px}
 </style>
 </head>
@@ -74,7 +123,7 @@ body:after{box-shadow:0 0 120px rgba(255,59,24,.18),0 0 220px rgba(168,60,255,.1
 
 <script>
 const DB_NAME='retro_collection_db', DB_VER=3, STORE='games', CONSOLE_STORE='consoles';
-let db, games=[], consoles=[], page='collection', pendingImage='', pendingConsoleImage='', editingId=null, editingConsoleId=null;
+let db, games=[], consoles=[], page='collection', pendingImage='', pendingConsoleImage='', editingId=null, editingConsoleId=null, selectedGameId=null;
 
 const platforms=['Nintendo','Super Nintendo','Nintendo 64','Game Boy','Game Boy Color','Game Boy Advance','DS','3DS','NES','Wii','Wii U','PlayStation','PlayStation 2','PlayStation 3','PlayStation 4','PlayStation 5','PSP','Xbox','Xbox 360','Xbox One','Xbox Series','Mega Drive','Master System','Dreamcast','Saturn','PC','Autre'];
 const conditions=['Cartouche/disque seul','Complet avec boîte','Complet + notice/accessoires','Scellé','Autre'];
@@ -108,16 +157,50 @@ function collectionHTML(){
  const q=window._q||'', p=window._p||'Tous';
  let list=games.filter(g=>(!q||`${g.title} ${g.platform} ${g.edition}`.toLowerCase().includes(q.toLowerCase()))&&(p==='Tous'||g.platform===p));
  list.sort((a,b)=>(a.title||'').localeCompare(b.title||''));
- const qty=games.reduce((n,g)=>n+(Number(g.quantity)||1),0), val=games.reduce((n,g)=>n+((Number(g.price!==''&&g.price!=null?g.price:g.estimate?.typical)||0)*(Number(g.quantity)||1)),0);
- return `<div class="app">${header()}<section class="hero"><h1>Ma collection</h1><p class="tagline">Chaque jeu a son histoire. Collectionne-les tous. 🎮</p>
- <div class="stats"><div class="stat"><b>${games.length}</b><span>jeux</span></div><div class="stat"><b>${qty}</b><span>exemplaires</span></div><div class="stat"><b>${euro(val)}</b><span>valeur connue</span></div></div>
- <button class="primary" onclick="openAdd()">📸 Ajouter un jeu par photo</button></section>
- <div class="toolbar"><input class="search" id="search" placeholder="Rechercher un jeu…" value="${escapeHtml(q)}"><select id="platformFilter"><option>Tous</option>${platforms.map(x=>`<option ${p===x?'selected':''}>${escapeHtml(x)}</option>`).join('')}</select></div>
- ${list.length?`<div class="grid">${list.map(card).join('')}</div>`:`<div class="empty">Aucun jeu ici.<br><br>Appuie sur « Ajouter un jeu par photo » pour commencer.</div>`}
- </div>`;
+ if(!selectedGameId || !list.some(g=>g.id===selectedGameId)) selectedGameId=list[0]?.id||games[0]?.id||null;
+ const selected=games.find(g=>g.id===selectedGameId)||list[0];
+ const qty=games.reduce((n,g)=>n+(Number(g.quantity)||1),0);
+ const val=games.reduce((n,g)=>n+((Number(g.price!==''&&g.price!=null?g.price:g.estimate?.typical)||0)*(Number(g.quantity)||1)),0);
+ const by={}; games.forEach(g=>{const k=g.platform||'Autre';by[k]=(by[k]||0)+((Number(g.price!==''&&g.price!=null?g.price:g.estimate?.typical)||0)*(Number(g.quantity)||1))});
+ const topPlatforms=Object.entries(by).sort((a,b)=>b[1]-a[1]).slice(0,5); const max=Math.max(1,...topPlatforms.map(x=>x[1]));
+ return `<div class="app">
+ <div class="arcadeHeader"><div class="arcadeLogo">RETRO <span>COLLECTION</span></div>
+ <input class="arcadeSearch" id="search" placeholder="🔎 Rechercher un jeu, une console…" value="${escapeHtml(q)}">
+ <div class="arcadeTools"><button class="arcadeTool" onclick="exportData()">☁️ Sauvegarder</button><button class="arcadeTool" onclick="$('#importInput').click()">⇧ Importer</button><button class="arcadeTool" onclick="page='settings';render()">⚙️</button></div></div>
+ <div class="arcadeTabs"><button onclick="page='collection';render()">🎮 Jeux</button><button onclick="page='consoles';render()">🕹️ Consoles</button><button onclick="page='stats';render()">▥ Statistiques</button><button onclick="page='settings';render()">⚙️ Paramètres</button></div>
+ <div class="fightBanner"><div class="fighter left"></div><div class="fighter right"></div><div class="fightWord">FIGHT!</div></div>
+ <div class="arcadeShell">
+  <aside class="arcadeRail"><button class="active"><span class="railIcon">🎮</span>Jeux</button><button onclick="page='consoles';render()"><span class="railIcon">🕹️</span>Consoles</button><button onclick="page='stats';render()"><span class="railIcon">📊</span>Statistiques</button><button onclick="page='backup';render()"><span class="railIcon">☁️</span>Sauvegarde</button><button onclick="page='settings';render()"><span class="railIcon">⚙️</span>Paramètres</button></aside>
+  <main class="collectionMain">
+   <div class="collectionHeading"><div><h1>MA COLLECTION</h1><p>Chaque jeu a son histoire. Collectionne-les tous. 🎮</p></div><button class="collectionAdd" onclick="openAdd()">＋ Ajouter un jeu</button></div>
+   <div class="arcadeFilters"><select id="platformFilter"><option>Tous les consoles</option><option>Tous</option>${platforms.map(x=>`<option ${p===x?'selected':''}>${escapeHtml(x)}</option>`).join('')}</select><select><option>Tous les états</option></select><input class="wide" id="collectionSearch" placeholder="Rechercher dans ma collection…" value="${escapeHtml(q)}"></div>
+   ${list.length?`<div class="arcadeGrid">${list.map(arcadeCard).join('')}</div>`:`<div class="empty">Aucun jeu ici.<br><br>Appuie sur « Ajouter un jeu » pour commencer.</div>`}
+   <div class="bottomSummary"><div><div class="summaryTitle">Ma collection en chiffres</div><div class="summaryStats"><div class="summaryStat"><b>🎮 ${games.length}</b><span>Jeux</span></div><div class="summaryStat"><b>🕹️ ${consoles.length}</b><span>Consoles</span></div><div class="summaryStat"><b>${euro(val)}</b><span>Valeur estimée</span></div></div></div><div class="platformBars"><div class="summaryTitle">Répartition par valeur</div>${topPlatforms.map(([k,v])=>`<div class="platformBar"><span>${escapeHtml(k)}</span><i style="width:${Math.max(8,Math.round(v/max*100))}%"></i><b>${euro(v)}</b></div>`).join('')||'<div class="meta">Ajoute des jeux pour voir la répartition.</div>'}</div></div>
+  </main>
+  <aside class="detailPanel">${selected?detailPanel(selected):`<div class="empty">Sélectionne un jeu.</div>`}</aside>
+ </div></div>`;
 }
-function card(g){const est=g.estimate;return `<article class="card" onclick="editGame('${g.id}')"><div class="thumbWrap">${g.image?`<img class="thumb" src="${g.image}" alt="">`:`<div class="thumb"></div>`}${est?.typical!=null?`<div class="estimateMini">🤖 ${euro(est.typical)}<small>${est.count||0} prix · ${est.updatedAt?new Intl.DateTimeFormat('fr-FR').format(new Date(est.updatedAt)):''}</small></div>`:''}</div><div class="cardbody"><div class="title">${escapeHtml(g.title||'Jeu sans titre')}</div><div class="meta">${escapeHtml(g.platform||'Console inconnue')}${g.edition?' · '+escapeHtml(g.edition):''}</div><span class="tag">${escapeHtml(g.condition||'État non renseigné')} · x${g.quantity||1}</span><div class="price">${g.price!==''&&g.price!=null?euro(Number(g.price)*(Number(g.quantity)||1)):'Prix personnel non renseigné'}</div><button class="estimateBtn" onclick="event.stopPropagation();estimateGame('${g.id}')">🔎 ${est?'Actualiser':'Estimer la valeur'}</button></div></article>`}
-function bindCollection(){const s=$('#search'), f=$('#platformFilter');if(s)s.oninput=()=>{window._q=s.value;render()};if(f)f.onchange=()=>{window._p=f.value;render()}}
+function arcadeCard(g){
+ const est=g.estimate;
+ return `<article class="arcadeCard ${selectedGameId===g.id?'selected':''}" onclick="selectGame('${g.id}')">
+  <div class="arcadeThumb">${g.image?`<img src="${g.image}" alt="">`:`<div class="thumb"></div>`}${est?.typical!=null?`<div class="arcadeEstimate">🤖 Est. ${euro(est.typical)}<small>${est.count||0} prix · ${est.updatedAt?new Intl.DateTimeFormat('fr-FR').format(new Date(est.updatedAt)):''}</small></div>`:''}</div>
+  <div class="arcadeCardBody"><div class="arcadeTitle">${escapeHtml(g.title||'Jeu sans titre')}</div><div class="arcadeMeta">${escapeHtml(g.platform||'Console inconnue')}</div><span class="arcadeTag">${escapeHtml(g.condition||'Bon état')} · x${g.quantity||1}</span><div class="arcadePrice">${g.price!==''&&g.price!=null?euro(Number(g.price)*(Number(g.quantity)||1)):(est?.typical!=null?euro(Number(est.typical)*(Number(g.quantity)||1)):'Valeur inconnue')}</div></div>
+ </article>`;
+}
+function detailPanel(g){
+ const est=g.estimate;
+ const searchTitle=[g.title,g.platform,g.edition].filter(Boolean).join(' ');
+ return `<div class="detailPhoto">${g.image?`<img src="${g.image}" alt="">`:''}${est?.typical!=null?`<div class="detailEstimateMini">🤖 Est. ${euro(est.typical)}</div>`:''}</div>
+ <div class="detailTitle">${escapeHtml(g.title||'Jeu sans titre')}</div><div class="detailMeta">🎮 ${escapeHtml(g.platform||'Console inconnue')}${g.edition?' · '+escapeHtml(g.edition):''}</div>
+ <div class="detailRow"><span>🏆 ${escapeHtml(g.condition||'État non renseigné')}</span><b>${g.price!==''&&g.price!=null?euro(Number(g.price)):(est?.typical!=null?euro(est.typical):'—')}</b></div>
+ ${est?.typical!=null?`<div class="detailEstimate"><div class="detailEstimateTitle">🤖 Estimation automatique</div><div class="detailEstimateMain">${euro(est.typical)}</div><div class="detailEstimateRange">Bas ${euro(est.low)} · Haut ${euro(est.high)} · ${est.count||0} prix analysés<br>${est.updatedAt?new Intl.DateTimeFormat('fr-FR').format(new Date(est.updatedAt)):''}</div></div>`:''}
+ <div class="marketGrid"><a class="marketBig vinted" href="${vintedUrl(g)}" target="_blank" rel="noopener"><span style="font-size:22px">V</span> Vinted ↗</a><a class="marketBig ebay" href="${ebayUrl(g)}" target="_blank" rel="noopener"><span style="font-size:22px">e</span> eBay ↗</a></div>
+ <div class="detailActions"><button class="detailAction" onclick="editGame('${g.id}')">✏️ Modifier le jeu</button><button class="detailAction primary" onclick="addExemplar('${g.id}')">＋ Ajouter un exemplaire</button><button class="detailAction" onclick="estimateGame('${g.id}')">🤖 ${est?'Actualiser l’estimation':'Estimer la valeur'}</button><button class="detailAction danger" onclick="deleteSelectedGame('${g.id}')">🗑️ Supprimer le jeu</button></div>`;
+}
+function selectGame(id){selectedGameId=id;render()}
+async function addExemplar(id){const g=games.find(x=>x.id===id);if(!g)return;g.quantity=Math.max(1,Number(g.quantity)||1)+1;g.updatedAt=new Date().toISOString();await putGame(g);await refresh();selectedGameId=id;toast('Exemplaire ajouté à la collection')}
+async function deleteSelectedGame(id){if(!confirm('Supprimer définitivement ce jeu ?'))return;await deleteGame(id);selectedGameId=null;await refresh();toast('Jeu supprimé')}
+function bindCollection(){const s=$('#search'), s2=$('#collectionSearch'), f=$('#platformFilter');const onSearch=e=>{window._q=e.target.value;render()};if(s)s.oninput=onSearch;if(s2)s2.oninput=onSearch;if(f)f.onchange=()=>{window._p=(f.value==='Tous les consoles'||f.value==='Tous')?'Tous':f.value;render()}}
 function consoleSearchUrl(c){return 'https://www.vinted.fr/catalog?search_text='+encodeURIComponent([c.name,c.model,c.edition].filter(Boolean).join(' '))}
 function consoleEbayUrl(c){return 'https://www.ebay.fr/sch/i.html?_nkw='+encodeURIComponent([c.name,c.model,c.edition].filter(Boolean).join(' '))}
 function consolesHTML(){const q=window._cq||'';let list=consoles.filter(c=>(!q||`${c.name} ${c.model} ${c.edition}`.toLowerCase().includes(q.toLowerCase())));return `<div class="app">${header()}<section class="hero street"><span class="streetBadge">⚡ FIGHT • COLLECT • REPEAT ⚡</span><h1>🕹️ MES CONSOLES</h1><p>Garde aussi une trace de tes machines, éditions et valeurs.</p><button class="primary" onclick="openConsoleEditor()">＋ Ajouter une console</button></section><div class="toolbar"><input class="search" id="consoleSearch" placeholder="Rechercher une console…" value="${escapeHtml(q)}"></div><div class="consoleGrid">${list.map(consoleCard).join('')||'<div class="empty" style="grid-column:1/-1">Aucune console enregistrée.</div>'}</div></div>`}
