@@ -738,7 +738,7 @@ function collectionHTML(){
  <div class="arcadeShell">
   <aside class="arcadeRail"><button class="active"><span class="railIcon">🎮</span>Jeux</button><button onclick="page='consoles';render()"><span class="railIcon">🕹️</span>Consoles</button><button onclick="page='stats';render()"><span class="railIcon">📊</span>Statistiques</button><button onclick="page='backup';render()"><span class="railIcon">☁️</span>Sauvegarde</button><button onclick="page='settings';render()"><span class="railIcon">⚙️</span>Paramètres</button></aside>
   <main class="collectionMain">
-   <div class="collectionHeading"><div><h1>MA COLLECTION</h1><p>Chaque jeu a son histoire. Collectionne-les tous. 🎮</p></div><button class="collectionAdd" onclick="openAdd()">＋ Ajouter un jeu</button></div>
+   <div class="collectionHeading"><div><h1>MA COLLECTION</h1><p>Chaque jeu a son histoire. Collectionne-les tous. 🎮</p></div><div class="collectionHeadingActions"><button class="detailAction" onclick="generateMissingDescriptions()">✨ Présentations manquantes</button><button class="collectionAdd" onclick="openAdd()">＋ Ajouter un jeu</button></div></div>
    <div class="arcadeFilters"><select id="platformFilter"><option>Tous les consoles</option><option>Tous</option>${platforms.map(x=>`<option ${p===x?'selected':''}>${escapeHtml(x)}</option>`).join('')}</select><select id="conditionFilter"><option value="Tous" ${c==='Tous'?'selected':''}>Tous les états</option>${conditions.map(x=>`<option value="${escapeHtml(x)}" ${c===x?'selected':''}>${escapeHtml(x)}</option>`).join('')}</select><input class="wide" id="collectionSearch" placeholder="Rechercher dans ma collection…" value="${escapeHtml(q)}"></div>
    <div id="collectionResults">${list.length?`<div class="arcadeGrid">${list.map(arcadeCard).join('')}</div>`:`<div class="empty">Aucun jeu ici.<br><br>Appuie sur « Ajouter un jeu » pour commencer.</div>`}</div>
    <div class="bottomSummary"><div><div class="summaryTitle">Ma collection en chiffres</div><div class="summaryStats"><div class="summaryStat"><b>🎮 ${games.length}</b><span>Jeux</span></div><div class="summaryStat"><b>🕹️ ${consoles.length}</b><span>Consoles</span></div><div class="summaryStat"><b>${euro(totalCollectionVal)}</b><span>Prix total collection</span></div></div></div><div class="platformBars"><div class="summaryTitle">Répartition par valeur</div>${topPlatforms.map(([k,v])=>`<div class="platformBar"><span>${escapeHtml(k)}</span><i style="width:${Math.max(8,Math.round(v/max*100))}%"></i><b>${euro(v)}</b></div>`).join('')||'<div class="meta">Ajoute des jeux pour voir la répartition.</div>'}</div></div>
@@ -763,6 +763,39 @@ function detailPanel(g){
  <div class="marketGrid"><a class="marketBig vinted" href="${vintedUrl(g)}" target="_blank" rel="noopener noreferrer" onclick="return openVintedExternal(event, this.href)"><span class="vLogo">V</span><span>Vinted</span><b>↗</b></a><a class="marketBig ebay" href="${ebayUrl(g)}" target="_blank" rel="noopener"><span class="ebayLogo"><span class="e">e</span><span class="b">b</span><span class="a">a</span><span class="y">y</span></span><b>↗</b></a></div>
  <div class="detailActions"><button class="detailAction" onclick="editGame('${g.id}')">✏️ Modifier le jeu</button><button class="detailAction primary" onclick="addExemplar('${g.id}')">＋ Ajouter un exemplaire</button><button class="detailAction" onclick="estimateGame('${g.id}')">🤖 ${est?'Actualiser l’estimation':'Estimer la valeur'}</button><button class="detailAction danger" onclick="deleteSelectedGame('${g.id}')">🗑️ Supprimer le jeu</button></div>`;
 }
+async function generateGameDescription(g){
+ const url=getWorkerUrl();
+ if(!url)throw new Error('Configure d’abord l’URL du serveur dans Réglages.');
+ const r=await authFetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'generate_description',game:{title:g.title,platform:g.platform,year:g.year,edition:g.edition}})});
+ const raw=await r.text();let data={};try{data=raw?JSON.parse(raw):{}}catch{}
+ if(!r.ok)throw new Error(data.error||`Erreur serveur HTTP ${r.status}`);
+ if(!data.description)throw new Error('Présentation vide retournée par le serveur.');
+ return data.description.trim();
+}
+async function generateMissingDescriptions(){
+ const missing=games.filter(g=>g&&g.title&&!String(g.notes||g.description||'').trim());
+ if(!missing.length){toast('✨ Toutes les fiches ont déjà une présentation.');return}
+ if(!confirm(`Générer une présentation pour ${missing.length} jeu(x) dont la note est vide ?`))return;
+ const button=[...document.querySelectorAll('button')].find(b=>b.textContent.includes('Présentations manquantes'));
+ if(button){button.disabled=true;button.dataset.oldText=button.textContent;button.textContent='⏳ Génération…'}
+ let done=0,failed=0;
+ try{
+  for(const g of missing){
+   try{
+    const description=await generateGameDescription(g);
+    g.notes=description;
+    g.updatedAt=new Date().toISOString();
+    await putGame(g);
+    done++;
+   }catch(e){failed++;console.warn('Présentation impossible pour',g.title,e)}
+  }
+  await refresh();
+  toast(failed?`✨ ${done} présentation(s) ajoutée(s), ${failed} échec(s)`:`✨ ${done} présentation(s) ajoutée(s)`);
+ }finally{
+  if(button){button.disabled=false;button.textContent=button.dataset.oldText||'✨ Présentations manquantes'}
+ }
+}
+
 function selectGame(id){selectedGameId=id;render()}
 function openGameSheet(id){
   selectedGameId=id;
@@ -914,13 +947,13 @@ function openEditor(g={}){
  <div class="field"><label>État</label><select id="fCondition">${conditions.map(x=>`<option ${g.condition===x?'selected':''}>${escapeHtml(x)}</option>`).join('')}</select></div>
  <div class="row"><div class="field"><label>Quantité</label><input id="fQty" type="number" min="1" value="${g.quantity||1}"></div><div class="field"><label>Prix personnel (€)</label><input id="fPrice" type="number" min="0" step="0.01" value="${g.price??''}"></div></div>${g.estimate?.typical!=null?`<div class="estimateBox"><div class="estimateTitle">🤖 Estimation automatique</div><div class="estimateMain">${euro(g.estimate.typical)}</div><div class="estimateRange">${euro(g.estimate.low)} – ${euro(g.estimate.high)} · ${g.estimate.count||0} prix analysés</div></div>`:''}
  <div class="field"><label>Date de l'estimation</label><input id="fPriceDate" type="date" value="${g.priceDate||''}"></div>
- <div class="field"><label>Notes</label><textarea id="fNotes">${escapeHtml(g.notes||'')}</textarea></div>
+ <div class="field"><label>Notes / présentation</label><textarea id="fNotes" placeholder="Une courte présentation du jeu sera proposée automatiquement…">${escapeHtml(g.notes||g.description||'')}</textarea></div>
  <p class="hint">Confiance IA : ${escapeHtml(g.confidence||'non indiquée')}. Corrige librement les informations avant d'enregistrer.</p>
  <div class="actions"><button onclick="gameDialog.close()">Annuler</button>${g.title?`<button class="marketBtn vinted" onclick="openVintedExternal(event, vintedUrlFromForm())"><span class="marketIcon">V</span><span><span class="marketLabel">Vinted</span><span class="marketHint">Voir les annonces</span></span></button>`:''}${g.title?`<button class="marketBtn ebay" onclick="window.open(ebayUrlFromForm(), '_blank')"><span class="marketIcon">e</span><span><span class="marketLabel">eBay</span><span class="marketHint">Voir les annonces</span></span></button>`:''}<button onclick="estimateEditingGame()">🤖 Estimer la valeur</button><button class="ok" onclick="saveEditor()">💾 Enregistrer</button>${editingId?'<button class="danger" onclick="removeEditing()">🗑️ Supprimer</button>':''}</div>`;
  d.showModal();
 }
 const gameDialog=$('#gameDialog');
-async function saveEditor(){const old=editingId?games.find(x=>x.id===editingId):null;const g={id:editingId||crypto.randomUUID(),image:old?.image||pendingImage,title:$('#fTitle').value.trim(),platform:$('#fPlatform').value.trim(),year:$('#fYear').value||'',edition:$('#fEdition').value.trim(),condition:$('#fCondition').value,quantity:Math.max(1,Number($('#fQty').value)||1),price:$('#fPrice').value===''?'':Number($('#fPrice').value),priceDate:$('#fPriceDate').value,notes:$('#fNotes').value.trim(),estimate:window._pendingEstimate||old?.estimate||null,updatedAt:new Date().toISOString()};await putGame(g);gameDialog.close();pendingImage='';window._pendingEstimate=null;await refresh();toast('Jeu enregistré')}
+async function saveEditor(){const old=editingId?games.find(x=>x.id===editingId):null;const g={id:editingId||crypto.randomUUID(),image:old?.image||pendingImage,title:$('#fTitle').value.trim(),platform:$('#fPlatform').value.trim(),year:$('#fYear').value||'',edition:$('#fEdition').value.trim(),condition:$('#fCondition').value,quantity:Math.max(1,Number($('#fQty').value)||1),price:$('#fPrice').value===''?'':Number($('#fPrice').value),priceDate:$('#fPriceDate').value,notes:$('#fNotes').value.trim(),description:old?.description||'',estimate:window._pendingEstimate||old?.estimate||null,updatedAt:new Date().toISOString()};await putGame(g);gameDialog.close();pendingImage='';window._pendingEstimate=null;await refresh();toast('Jeu enregistré')}
 async function editGame(id){const g=games.find(x=>x.id===id);if(g)openEditor(g)}
 async function estimateEditingGame(){
  const g={id:editingId,title:$('#fTitle')?.value.trim(),platform:$('#fPlatform')?.value.trim(),year:$('#fYear')?.value||'',edition:$('#fEdition')?.value.trim(),condition:$('#fCondition')?.value||''};
