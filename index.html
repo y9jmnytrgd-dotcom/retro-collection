@@ -300,6 +300,84 @@ button,input,select,textarea{max-width:100%;min-width:0}
   }
 }
 </style>
+<style id="arcade-ui-upgrade">
+/* === ARCADE UI UPGRADE — boutons, cartes et images === */
+:root{
+  --arc-blue:#18a8ff;--arc-cyan:#00f6ff;--arc-pink:#ff28d7;--arc-purple:#9a42ff;
+  --arc-yellow:#ffd21c;--arc-orange:#ff6b00;--arc-red:#ff244f;--arc-green:#19f0c1;
+}
+.arcadeHeader.functionalBar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;margin:8px 0 12px}
+.arcadeSearch{height:52px!important;border:2px solid var(--arc-blue)!important;border-radius:15px!important;background:linear-gradient(180deg,#07132c,#040914)!important;box-shadow:inset 0 0 18px #000,0 0 16px #008cff30!important;font-weight:800;letter-spacing:.2px}
+.arcadeSearch:focus{outline:none;border-color:var(--arc-cyan)!important;box-shadow:inset 0 0 18px #000,0 0 24px #00eaff55!important}
+.arcadeTools{display:grid!important;grid-template-columns:repeat(4,auto);gap:7px}
+.arcadeTool{height:46px!important;min-width:46px;border:2px solid #3d57ff!important;border-radius:12px!important;background:linear-gradient(145deg,#111332,#070a18)!important;color:#fff!important;font-weight:1000!important;box-shadow:inset 0 0 12px #000,0 0 12px #334cff25!important;transition:.18s!important}
+.arcadeTool:hover{transform:translateY(-2px);border-color:var(--arc-cyan)!important;box-shadow:0 0 20px #00eaff44!important}
+.arcadeTabs{border:2px solid #252cff!important;background:#040711!important;box-shadow:0 0 25px #392cff24,inset 0 0 18px #000!important}
+.arcadeTabs button{border:1px solid transparent!important;font-size:12px!important;letter-spacing:.3px;text-transform:uppercase;text-shadow:0 2px 0 #000;transition:.18s}
+.arcadeTabs button:hover{border-color:#546dff!important;background:#0e1230!important;color:#fff!important}
+.arcadeTabs button.tabActive{border-color:#ff4268!important;background:linear-gradient(180deg,#ff244f,#8b0d35)!important;box-shadow:0 0 18px #ff244f66,inset 0 0 12px #ffb00022!important}
+.collectionHeading{padding:10px 12px;border:2px solid #512cff;border-radius:16px;background:linear-gradient(145deg,#0a0920,#07050f);box-shadow:0 0 24px #612cff20,inset 0 0 18px #000;margin-bottom:11px}
+.collectionHeading h1{color:#fff!important;text-shadow:0 0 8px #fff,0 0 18px #ff28d7,3px 3px 0 #24002d!important;font-size:clamp(24px,3vw,34px)!important}
+.collectionHeading p{color:#ffd84d!important;text-shadow:0 0 10px #ff7a0028}
+.collectionAdd{border:2px solid var(--arc-yellow)!important;background:linear-gradient(180deg,#ff7b00,#db2500)!important;box-shadow:0 0 20px #ff6b0044,inset 0 0 12px #ffd21c33!important}
+.collectionAdd:hover{transform:translateY(-2px);box-shadow:0 0 28px #ff6b0070!important}
+.arcadeFilters{padding:8px;border:1px solid #29285e;border-radius:14px;background:#040611;box-shadow:inset 0 0 20px #000;margin-bottom:13px}
+.arcadeFilters>*{height:44px!important;border:2px solid #285cff!important;border-radius:10px!important;background:linear-gradient(180deg,#080e25,#040711)!important;box-shadow:inset 0 0 12px #000,0 0 10px #285cff20!important;font-weight:800}
+.arcadeFilters>*:focus{outline:none;border-color:#00eaff!important;box-shadow:0 0 18px #00eaff33!important}
+.arcadeGrid{gap:14px!important}
+.arcadeCard{border:2px solid #1f8cff!important;border-radius:14px!important;background:linear-gradient(145deg,#090d1f,#05060d 70%)!important;box-shadow:0 12px 28px #000d,0 0 18px #008cff20!important;clip-path:polygon(0 10px,10px 0,calc(100% - 10px) 0,100% 10px,100% calc(100% - 10px),calc(100% - 10px) 100%,10px 100%,0 calc(100% - 10px))}
+.arcadeCard:nth-child(3n+2){border-color:#ffb21a!important;box-shadow:0 12px 28px #000d,0 0 20px #ffb21a22!important}
+.arcadeCard:nth-child(3n){border-color:#d92cff!important;box-shadow:0 12px 28px #000d,0 0 20px #d92cff22!important}
+.arcadeCard:hover,.arcadeCard.selected{transform:translateY(-5px) scale(1.01)!important;box-shadow:0 18px 34px #000e,0 0 28px #00cfff44!important}
+.arcadeThumb{height:185px!important;background:radial-gradient(circle at 50% 35%,#18295a,#05060d 65%)!important}
+.arcadeThumb:before{content:"";position:absolute;inset:0;z-index:1;background:repeating-linear-gradient(0deg,transparent 0 3px,rgba(255,255,255,.035) 4px);pointer-events:none;mix-blend-mode:screen}
+.arcadeThumb:after{background:linear-gradient(180deg,transparent 50%,#02030bde 100%)!important;z-index:1}
+.arcadeThumb img{transition:transform .35s ease,filter .35s ease;image-rendering:auto}
+.arcadeCard:hover .arcadeThumb img{transform:scale(1.05);filter:saturate(1.18) contrast(1.05)}
+.arcadeEstimate{border:1px solid var(--arc-green)!important;background:#03120eea!important;box-shadow:0 0 14px #19f0c144!important;color:#59ffd9!important}
+.arcadeCardBody{padding:11px 12px 13px!important;background:linear-gradient(180deg,#080914aa,#05050c)}
+.arcadeTitle{font-size:16px!important;color:#fff;text-shadow:0 2px 0 #000}
+.arcadeMeta{color:#8fdcff!important}
+.arcadeTag{border:1px solid #3c65ff;background:#0b1740!important;color:#bcecff!important;box-shadow:0 0 10px #2d5cff22}
+.arcadePrice{color:#62ffbb!important;text-shadow:0 0 12px #19f0c166!important}
+.detailPanel{border:2px solid #00d9ff!important;background:linear-gradient(145deg,#050814,#09051a)!important;box-shadow:0 18px 42px #000d,0 0 28px #00d9ff22!important}
+.detailPhoto{height:190px!important;border:2px solid #4f3cff!important;box-shadow:inset 0 0 20px #000,0 0 18px #4f3cff25}
+.detailPhoto img{filter:saturate(1.08) contrast(1.04)}
+.detailTitle{color:#fff;text-shadow:0 0 12px #00eaff44}
+.detailRow{border:1px solid #2e6b8b!important;background:#06101b!important}
+.marketBig{border-width:2px!important;box-shadow:0 0 22px #000a!important}
+.detailAction{border:2px solid #2a5cff!important;background:linear-gradient(145deg,#0b1025,#050711)!important;box-shadow:inset 0 0 12px #000,0 0 10px #2a5cff22!important;transition:.18s!important}
+.detailAction:hover{transform:translateY(-2px);border-color:#00eaff!important;box-shadow:0 0 20px #00eaff35!important}
+.detailAction.primary{border-color:#ffb000!important;background:linear-gradient(180deg,#ff8a00,#e52d00)!important;color:#fff!important;box-shadow:0 0 20px #ff6b0044!important}
+.detailAction.danger{border-color:#ff315d!important;color:#ff8ba5!important}
+.bottomSummary{border:2px solid #7d28ff!important;background:linear-gradient(145deg,#070616,#04050c)!important;box-shadow:0 0 30px #7d28ff20,inset 0 0 20px #000!important}
+.summaryTitle{color:#ffda38!important;text-shadow:0 0 9px #ff8a0025}
+.summaryStat b{color:#fff!important;text-shadow:0 0 10px #00d9ff66}
+.platformBars{border-left-color:#3a2c63!important}
+.platformBar i{background:linear-gradient(90deg,#00d9ff,#2c65ff,#d72cff,#ffb000)!important;box-shadow:0 0 8px #5f4cff55}
+.empty{border:2px dashed #3c5fff!important;background:#050713cc!important;color:#8fc8ff!important}
+.arcadeRail{border:2px solid #263eff!important;background:#040611!important;box-shadow:0 15px 35px #0009,0 0 18px #263eff22!important}
+.arcadeRail button{border-bottom:1px solid #1c2852!important}
+.arcadeRail button:hover{background:#091534;color:#fff}
+.arcadeRail button.active{background:linear-gradient(180deg,#ff244f,#780d32)!important;box-shadow:inset 0 0 20px #ff6a0022,0 0 14px #ff244f33!important}
+@media(max-width:980px){.arcadeHeader.functionalBar{grid-template-columns:1fr}.arcadeTools{grid-template-columns:repeat(4,1fr);width:100%}.arcadeTool{width:100%}}
+@media(max-width:650px){
+ .arcadeHeader.functionalBar{gap:8px}
+ .arcadeTools{grid-template-columns:repeat(4,1fr);gap:6px}
+ .arcadeTool{height:42px!important;font-size:11px!important;padding:0 5px!important}
+ .collectionHeading{padding:9px 10px;display:flex!important;flex-wrap:wrap}
+ .collectionHeading>div{min-width:0;flex:1 1 220px}
+ .collectionAdd{flex:0 0 auto}
+ .arcadeGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important}
+ .arcadeThumb{height:145px!important}
+ .arcadeTitle{font-size:14px!important}
+ .arcadeMeta{font-size:10px!important}
+ .arcadeTag{font-size:8px!important}
+ .arcadePrice{font-size:16px!important}
+ .bottomSummary{margin-top:12px}
+}
+@media(max-width:390px){.arcadeGrid{grid-template-columns:1fr 1fr!important}.arcadeThumb{height:132px!important}.arcadeTools{grid-template-columns:repeat(4,1fr)}.arcadeTool{font-size:10px!important}}
+</style>
 </head>
 <body>
 <div id="loginScreen" class="loginScreen" hidden>
