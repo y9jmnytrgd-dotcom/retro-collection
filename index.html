@@ -275,6 +275,31 @@ button,input,select,textarea{max-width:100%;min-width:0}
 .loginCard h1{margin:0 0 8px}.loginCard .field{text-align:left;margin:14px 0}.loginCard input{width:100%;box-sizing:border-box}.loginBtn{width:100%;min-height:48px;font-weight:900}
 </style>
 
+
+<style id="mobile-pixel-hero-fix">
+/* Mobile : conserver toute la largeur du bandeau pour que les 2 combattants restent visibles */
+@media (max-width: 650px){
+  .pixelArcadeHero{
+    width:100%;
+    aspect-ratio:1536/370;
+    min-height:88px;
+    height:auto;
+    max-height:none;
+    background-size:100% 100%;
+    background-position:center center;
+    border-width:2px;
+    border-radius:16px;
+    margin-top:2px;
+    margin-bottom:12px;
+  }
+}
+@media (max-width:390px){
+  .pixelArcadeHero{
+    min-height:84px;
+    border-radius:14px;
+  }
+}
+</style>
 </head>
 <body>
 <div id="loginScreen" class="loginScreen" hidden>
