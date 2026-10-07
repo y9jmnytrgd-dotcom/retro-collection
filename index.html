@@ -988,7 +988,8 @@ function openVinted(id){
  const g=games.find(x=>String(x.id)===String(id));
  if(!g)return;
  const url=vintedUrl(g);
- try{ window.location.assign(url); }catch(e){ window.location.href=url; }
+ const w=window.open(url,'_blank','noopener,noreferrer');
+ if(!w) toast('Autorise les fenêtres externes pour ouvrir Vinted.');
 }
 function vintedUrlFromForm(){return vintedUrl({title:$('#fTitle')?.value||'',platform:$('#fPlatform')?.value||'',edition:$('#fEdition')?.value||''})}
 function ebayUrl(g){return 'https://www.ebay.fr/sch/i.html?_nkw='+encodeURIComponent([g.title,g.platform,g.edition].filter(Boolean).join(' '))}
