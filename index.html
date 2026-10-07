@@ -265,6 +265,17 @@ button,input,select,textarea{max-width:100%;min-width:0}
 .detailPanel{border:2px solid #00d9ff;background:linear-gradient(145deg,#050814,#0a0614);box-shadow:0 18px 42px #000d,0 0 25px #00cfff25}.bottomSummary{border-color:#7d28ff;background:#05060f;box-shadow:0 0 28px #7d28ff20}.fightBanner{display:none!important}
 @media(max-width:650px){.pixelArcadeHero{aspect-ratio:2.15/1;min-height:150px;max-height:220px;border-radius:18px}.functionalBar{grid-template-columns:1fr;gap:7px}.functionalBar .arcadeTools{justify-content:center}}
 
+
+/* === BARRE ARCADE PRINCIPALE : 3 boutons centrés, sans doublon Réglages === */
+.arcadeTabs{width:min(760px,100%);margin:14px auto 16px;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:8px;border:2px solid #176cff;border-radius:18px;background:linear-gradient(180deg,#070d22,#03050e);box-shadow:0 0 0 2px #120a31,0 0 28px rgba(0,126,255,.28),inset 0 0 22px #000c;position:relative;overflow:hidden}
+.arcadeTabs:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(0,217,255,.08),transparent);animation:tabSweep 4s linear infinite;pointer-events:none}
+.arcadeTabs button{position:relative;z-index:1;min-height:58px;border:2px solid #2547a8;background:linear-gradient(180deg,#101a3a,#070b1c);color:#b9c9f7;border-radius:13px;padding:8px 10px;font-size:12px;font-weight:1000;letter-spacing:.3px;text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:inset 0 0 12px #000,0 4px 0 #03040a,0 0 10px rgba(28,94,255,.16);transition:transform .15s,box-shadow .15s,border-color .15s,color .15s}
+.arcadeTabs button:hover{transform:translateY(-2px);border-color:#00d9ff;color:#fff;box-shadow:inset 0 0 15px #00152d,0 5px 0 #03040a,0 0 22px rgba(0,217,255,.35)}
+.arcadeTabs button:active{transform:translateY(1px);box-shadow:inset 0 0 18px #000,0 2px 0 #03040a}
+.arcadeTabs button.tabActive{background:linear-gradient(180deg,#ff3b18 0%,#c81531 48%,#6d123d 100%);border-color:#ffd21c;color:#fff;box-shadow:inset 0 0 18px rgba(255,210,28,.22),0 4px 0 #2d0710,0 0 24px rgba(255,59,24,.55);text-shadow:0 2px 0 #520914}
+.arcadeTabs .tabIcon{font-size:24px;line-height:1;filter:drop-shadow(0 0 5px currentColor)}
+@keyframes tabSweep{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+@media(max-width:650px){.arcadeTabs{width:calc(100% - 4px);grid-template-columns:repeat(3,1fr);gap:7px;padding:6px;border-radius:16px}.arcadeTabs button{min-height:54px;padding:7px 4px;flex-direction:column;gap:3px;font-size:9px;letter-spacing:.1px}.arcadeTabs .tabIcon{font-size:21px}}
 </style>
 <style>
 .loginScreen{position:fixed;inset:0;z-index:99999;display:grid;place-items:center;padding:20px;background:radial-gradient(circle at 50% 20%,rgba(255,90,0,.18),transparent 35%),linear-gradient(145deg,#12030b,#050507 60%,#180008);overflow:auto}
@@ -706,7 +717,7 @@ function collectionHTML(){
   <input class="arcadeSearch" id="search" placeholder="🔎 Rechercher un jeu, une console…" value="${escapeHtml(q)}">
   <div class="arcadeTools"><button class="arcadeTool" onclick="exportData()">💾 Sauvegarder</button><button class="arcadeTool" onclick="$('#importInput').click()">📥 Importer</button><button class="arcadeTool" onclick="syncNow()">☁️ Sync</button><button class="arcadeTool" onclick="page='settings';render()">⚙️</button></div>
  </div>
- <div class="arcadeTabs"><button class="${page==='collection'?'tabActive':''}" onclick="page='collection';render()">🎮 Jeux</button><button class="${page==='consoles'?'tabActive':''}" onclick="page='consoles';render()">🕹️ Consoles</button><button class="${page==='stats'?'tabActive':''}" onclick="page='stats';render()">▥ Statistiques</button><button class="${page==='settings'?'tabActive':''}" onclick="page='settings';render()">⚙️ Paramètres</button></div>
+ <div class="arcadeTabs"><button class="${page==='collection'?'tabActive':''}" onclick="page='collection';render()"><span class="tabIcon">🎮</span><span>Jeux</span></button><button class="${page==='consoles'?'tabActive':''}" onclick="page='consoles';render()"><span class="tabIcon">🕹️</span><span>Consoles</span></button><button class="${page==='stats'?'tabActive':''}" onclick="page='stats';render()"><span class="tabIcon">▥</span><span>Statistiques</span></button></div>
  <div class="arcadeShell">
   <aside class="arcadeRail"><button class="active"><span class="railIcon">🎮</span>Jeux</button><button onclick="page='consoles';render()"><span class="railIcon">🕹️</span>Consoles</button><button onclick="page='stats';render()"><span class="railIcon">📊</span>Statistiques</button><button onclick="page='backup';render()"><span class="railIcon">☁️</span>Sauvegarde</button><button onclick="page='settings';render()"><span class="railIcon">⚙️</span>Paramètres</button></aside>
   <main class="collectionMain">
