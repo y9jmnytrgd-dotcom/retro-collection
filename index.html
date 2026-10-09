@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="Retro Collection">
 <link rel="manifest" href="manifest.json">
 <title>Retro Collection — Pixel Arcade</title>
-<meta name="retro-build" content="search-vinted-fix-2026-10-07">
+<meta name="retro-build" content="vinted-stability-fix-2026-10-09">
 <style>
 :root{--bg:#09030f;--panel:#16091f;--panel2:#21102b;--border:#4b214f;--text:#fff7f2;--muted:#c8afc9;--accent:#ff3b18;--yellow:#ffd21c;--purple:#a83cff;--price:#49f0a0;--shadow:0 18px 55px rgba(0,0,0,.55)}
 *{box-sizing:border-box}html{background:#09030f}body{margin:0;min-height:100vh;color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:
@@ -760,7 +760,7 @@ function detailPanel(g){
  <div class="detailTitle">${escapeHtml(g.title||'Jeu sans titre')}</div><div class="detailMeta">🎮 ${escapeHtml(g.platform||'Console inconnue')}${g.edition?' · '+escapeHtml(g.edition):''}</div>
  <div class="detailRow"><span>🏆 ${escapeHtml(g.condition||'État non renseigné')}</span><b>${g.price!==''&&g.price!=null?euro(Number(g.price)):(est?.typical!=null?euro(est.typical):'—')}</b></div>
  ${est?.typical!=null?`<div class="detailEstimate"><div class="detailEstimateTitle">🤖 Estimation automatique</div><div class="detailEstimateMain">${euro(est.typical)}</div><div class="detailEstimateRange">Bas ${euro(est.low)} · Haut ${euro(est.high)} · ${est.count||0} prix analysés<br>${est.updatedAt?new Intl.DateTimeFormat('fr-FR').format(new Date(est.updatedAt)):''}</div></div>`:''}
- <div class="marketGrid"><a class="marketBig vinted" href="${vintedUrl(g)}" target="_blank" rel="noopener noreferrer" onclick="return openVintedExternal(event, this.href)"><span class="vLogo">V</span><span>Vinted</span><b>↗</b></a><a class="marketBig ebay" href="${ebayUrl(g)}" target="_blank" rel="noopener"><span class="ebayLogo"><span class="e">e</span><span class="b">b</span><span class="a">a</span><span class="y">y</span></span><b>↗</b></a></div>
+ <div class="marketGrid"><a class="marketBig vinted" href="${vintedUrl(g)}" target="_blank" rel="noopener noreferrer"><span class="vLogo">V</span><span>Vinted</span><b>↗</b></a><a class="marketBig ebay" href="${ebayUrl(g)}" target="_blank" rel="noopener"><span class="ebayLogo"><span class="e">e</span><span class="b">b</span><span class="a">a</span><span class="y">y</span></span><b>↗</b></a></div>
  <div class="detailActions"><button class="detailAction" onclick="editGame('${g.id}')">✏️ Modifier le jeu</button><button class="detailAction primary" onclick="addExemplar('${g.id}')">＋ Ajouter un exemplaire</button><button class="detailAction" onclick="estimateGame('${g.id}')">🤖 ${est?'Actualiser l’estimation':'Estimer la valeur'}</button><button class="detailAction danger" onclick="deleteSelectedGame('${g.id}')">🗑️ Supprimer le jeu</button></div>`;
 }
 async function generateGameDescription(g){
@@ -1050,12 +1050,17 @@ async function estimateGameData(g,fromEditor){
 }
 async function removeEditing(){if(!editingId)return;if(confirm('Supprimer définitivement ce jeu ?')){await deleteGame(editingId);gameDialog.close();await refresh();toast('Jeu supprimé')}}
 function openVintedExternal(e,url){
+  // Appelé uniquement depuis un clic utilisateur : ouvrir immédiatement évite le blocage iOS.
   if(e){e.preventDefault();e.stopPropagation();}
+  if(!url || typeof url!=='string'){toast('Recherche Vinted indisponible.');return false;}
   try{
-    const w=window.open(url,'_blank');
-    if(w){try{w.opener=null;}catch{}}
-    else{toast('Autorise les fenêtres externes pour ouvrir Vinted.');}
-  }catch(err){toast('Impossible d’ouvrir Vinted.');}
+    const target=new URL(url,location.href);
+    if(target.hostname!=='www.vinted.fr' && !target.hostname.endsWith('.vinted.fr')) throw new Error('Adresse Vinted invalide');
+    const w=window.open(target.href,'_blank','noopener,noreferrer');
+    if(w){try{w.opener=null;}catch{};return false;}
+    // Certains navigateurs iOS bloquent les fenêtres : proposer une navigation directe plutôt qu’une page vide.
+    if(confirm('Le navigateur a bloqué Vinted. Ouvrir la recherche dans cette page ?')) location.href=target.href;
+  }catch(err){toast('Impossible d’ouvrir la recherche Vinted.');}
   return false;
 }
 function vintedSearchText(g){
@@ -1077,6 +1082,24 @@ $('#importInput').onchange=async e=>{const file=e.target.files[0];if(!file)retur
 
 
 for(let i=0;i<18;i++){const sp=document.createElement('i');sp.className='spark';sp.style.left=(Math.random()*100)+'vw';sp.style.animationDuration=(6+Math.random()*8)+'s';sp.style.animationDelay=(-Math.random()*10)+'s';document.body.appendChild(sp)}
+// Récupération iOS après le retour d’un onglet externe (Vinted). Ne recharge pas si l’application est déjà affichée.
+let _lastVintedReturn=0;
+function recoverAfterExternalPage(){
+  const now=Date.now();
+  if(now-_lastVintedReturn<700)return;
+  const app=document.getElementById('app');
+  if(!app)return;
+  if(!app.firstElementChild){
+    _lastVintedReturn=now;
+    try{render();}catch(e){console.warn('Restauration de l’écran impossible',e)}
+    if(!app.firstElementChild && authToken()){
+      // Dernier recours si le navigateur a restauré une page réellement vide.
+      location.reload();
+    }
+  }
+}
+window.addEventListener('pageshow',()=>setTimeout(recoverAfterExternalPage,80));
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')setTimeout(recoverAfterExternalPage,120)});
 // Synchronisation automatique désactivée : elle ne doit jamais reconstruire l'écran pendant une saisie iPhone.
 // La synchronisation reste disponible via le bouton ☁️ Sync.
 async function startApp(){await openDB();nav();ensureSyncCode();await refresh();if(syncCode())await syncPullGames(false);if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then(rs=>rs.forEach(r=>r.unregister())).catch(()=>{});}}
