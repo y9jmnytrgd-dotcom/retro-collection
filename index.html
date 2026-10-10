@@ -716,9 +716,15 @@ function header(){
   const back=page!=='collection'?`<button class="backTop" onclick="goBack()">← Retour</button>`:'';
   return `<header>${back}<div class="logo">RETRO <span>COLLECTION</span></div><div style="display:flex;gap:8px;align-items:center"><button class="iconbtn" onclick="openAdd()">＋</button><button class="iconbtn" onclick="logout()" title="Se déconnecter">🔒</button></div></header>`;
 }
+function normalizePlatform(value){return String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim().toLocaleLowerCase('fr');}
+function collectionPlatforms(){
+ const byKey=new Map();
+ games.forEach(g=>{const label=String(g?.platform||'').replace(/\s+/g,' ').trim();if(!label)return;const key=normalizePlatform(label);if(key&&!byKey.has(key))byKey.set(key,label)});
+ return [...byKey.values()].sort((a,b)=>a.localeCompare(b,'fr',{sensitivity:'base'}));
+}
 function collectionHTML(){
  const q=window._q||'', p=window._p||'Tous', c=window._c||'Tous';
- let list=games.filter(g=>(!q||`${g.title} ${g.platform} ${g.edition}`.toLowerCase().includes(q.toLowerCase()))&&(p==='Tous'||g.platform===p)&&(c==='Tous'||g.condition===c));
+ let list=games.filter(g=>(!q||`${g.title||''} ${g.platform||''} ${g.edition||''}`.toLowerCase().includes(q.toLowerCase()))&&(p==='Tous'||normalizePlatform(g.platform)===normalizePlatform(p))&&(c==='Tous'||g.condition===c));
  list.sort((a,b)=>(a.title||'').localeCompare(b.title||''));
  if(!selectedGameId || !list.some(g=>g.id===selectedGameId)) selectedGameId=list[0]?.id||games[0]?.id||null;
  const selected=games.find(g=>g.id===selectedGameId)||list[0];
@@ -739,7 +745,7 @@ function collectionHTML(){
   <aside class="arcadeRail"><button class="active"><span class="railIcon">🎮</span>Jeux</button><button onclick="page='consoles';render()"><span class="railIcon">🕹️</span>Consoles</button><button onclick="page='stats';render()"><span class="railIcon">📊</span>Statistiques</button><button onclick="page='backup';render()"><span class="railIcon">☁️</span>Sauvegarde</button><button onclick="page='settings';render()"><span class="railIcon">⚙️</span>Paramètres</button></aside>
   <main class="collectionMain">
    <div class="collectionHeading"><div class="collectionHeadingTitle"><div class="collectionTitleRow"><h1>MA COLLECTION</h1><button class="collectionAdd" onclick="openAdd()">＋ Ajouter un jeu</button></div><p>Chaque jeu a son histoire. Collectionne-les tous. 🎮</p></div><div class="collectionHeadingActions"><button class="detailAction" onclick="generateMissingDescriptions()">✨ Présentations manquantes</button></div></div>
-   <div class="arcadeFilters"><select id="platformFilter"><option value="Tous" ${p==='Tous'?'selected':''}>Toutes les consoles</option>${[...new Set(games.map(g=>String(g.platform||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'fr')).map(x=>`<option value="${escapeHtml(x)}" ${p===x?'selected':''}>${escapeHtml(x)}</option>`).join('')}</select><select id="conditionFilter"><option value="Tous" ${c==='Tous'?'selected':''}>Tous les états</option>${conditions.map(x=>`<option value="${escapeHtml(x)}" ${c===x?'selected':''}>${escapeHtml(x)}</option>`).join('')}</select><input class="wide" id="collectionSearch" placeholder="Rechercher dans ma collection…" value="${escapeHtml(q)}"></div>
+   <div class="arcadeFilters"><select id="platformFilter"><option value="Tous" ${p==='Tous'?'selected':''}>Toutes les consoles</option>${collectionPlatforms().map(x=>`<option value="${escapeHtml(x)}" ${normalizePlatform(p)===normalizePlatform(x)?'selected':''}>${escapeHtml(x)}</option>`).join('')}</select><select id="conditionFilter"><option value="Tous" ${c==='Tous'?'selected':''}>Tous les états</option>${conditions.map(x=>`<option value="${escapeHtml(x)}" ${c===x?'selected':''}>${escapeHtml(x)}</option>`).join('')}</select><input class="wide" id="collectionSearch" placeholder="Rechercher dans ma collection…" value="${escapeHtml(q)}"></div>
    <div id="collectionResults">${list.length?`<div class="arcadeGrid">${list.map(arcadeCard).join('')}</div>`:`<div class="empty">Aucun jeu ici.<br><br>Appuie sur « Ajouter un jeu » pour commencer.</div>`}</div>
    <div class="bottomSummary"><div><div class="summaryTitle">Ma collection en chiffres</div><div class="summaryStats"><div class="summaryStat"><b>🎮 ${games.length}</b><span>Jeux</span></div><div class="summaryStat"><b>🕹️ ${consoles.length}</b><span>Consoles</span></div><div class="summaryStat"><b>${euro(totalCollectionVal)}</b><span>Prix total collection</span></div></div></div><div class="platformBars"><div class="summaryTitle">Répartition par valeur</div>${topPlatforms.map(([k,v])=>`<div class="platformBar"><span>${escapeHtml(k)}</span><i style="width:${Math.max(8,Math.round(v/max*100))}%"></i><b>${euro(v)}</b></div>`).join('')||'<div class="meta">Ajoute des jeux pour voir la répartition.</div>'}</div></div>
   </main>
@@ -819,7 +825,7 @@ function updateCollectionSearch(){
  let list=source.filter(g=>{
    if(!g)return false;
    const hay=`${g.title||''} ${g.platform||''} ${g.edition||''}`.toLowerCase();
-   return (!q||hay.includes(q))&&(p==='Tous'||g.platform===p)&&(c==='Tous'||g.condition===c);
+   return (!q||hay.includes(q))&&(p==='Tous'||normalizePlatform(g.platform)===normalizePlatform(p))&&(c==='Tous'||g.condition===c);
  });
  list.sort((a,b)=>String(a.title||'').localeCompare(String(b.title||''),'fr'));
  const box=$('#collectionResults');
