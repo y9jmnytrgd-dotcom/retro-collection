@@ -909,7 +909,34 @@ function pickCollectiblePhoto(which){$(which==='camera'?'#collectibleCameraInput
 $('#collectibleCameraInput').onchange=e=>handleCollectiblePhotoFile(e.target.files[0]);
 $('#collectibleGalleryInput').onchange=e=>handleCollectiblePhotoFile(e.target.files[0]);
 async function handleCollectiblePhotoFile(file){if(!file)return;try{pendingCollectibleRecognitionImage=await resizeImage(file);$('#collectiblePhotoPreviewWrap').innerHTML=`<img class="preview" src="${pendingCollectibleRecognitionImage}" alt="Photo de l’objet"><p class="hint">La photo sera envoyée au serveur sécurisé uniquement lorsque tu appuies sur « Analyser avec OpenAI ».</p><div class="actions"><button class="ok" onclick="recognizeCollectiblePhoto()">🤖 Analyser avec OpenAI</button></div>`}catch(e){toast('Impossible de lire cette photo.')}}
-async function recognizeCollectiblePhoto(){const url=getWorkerUrl();if(!url){toast('Configure d’abord l’URL du serveur dans Réglages.');return}if(!pendingCollectibleRecognitionImage){toast('Choisis d’abord une photo.');return}const wrap=$('#collectiblePhotoPreviewWrap');$('#collectibleLoading')?.remove();wrap.insertAdjacentHTML('beforeend','<p id="collectibleLoading" class="hint"><span class="loader"></span> Analyse de l’objet en cours…</p>');try{const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),45000);let r;try{r=await authFetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'recognize_object',image:pendingCollectibleRecognitionImage}),signal:controller.signal})}finally{clearTimeout(timer)}const raw=await r.text();let data={};try{data=raw?JSON.parse(raw):{}}catch{}if(!r.ok)throw new Error(data.error||`Erreur serveur HTTP ${r.status}`);if(!data.name&&!data.brand&&!data.description)throw new Error('L’objet n’a pas pu être identifié. Essaie une photo plus nette.');$('#collectibleLoading')?.remove();collectiblePhotoDialog.close();const d=window._collectibleDraft||{};openCollectibleEditor({...d,...data,category:data.category||d.category||'Autre',brand:data.brand||d.brand||'',year:data.year||d.year||'',country:data.country||d.country||'',series:data.series||d.series||'',reference:data.reference||d.reference||'',notes:[data.description,d.notes].filter(Boolean).join(d.notes&&data.description?'\n':'') ,image:pendingCollectibleRecognitionImage,quantity:d.quantity||1,condition:d.condition||'Inconnu',price:d.price||''});window._collectibleDraft=null;}catch(e){$('#collectibleLoading')?.remove();const msg=e.name==='AbortError'?'Le serveur met trop de temps à répondre.':e.message;wrap.insertAdjacentHTML('beforeend',`<p class="hint" style="color:#fecaca">❌ ${escapeHtml(msg)}</p>`);toast('Reconnaissance impossible : '+msg)}}
+async function recognizeCollectiblePhoto(){
+ const url=getWorkerUrl();
+ if(!url){toast('Configure d’abord l’URL du serveur dans Réglages.');return}
+ if(!pendingCollectibleRecognitionImage){toast('Choisis d’abord une photo.');return}
+ const wrap=$('#collectiblePhotoPreviewWrap');
+ const button=wrap.querySelector('button');
+ if(button){button.disabled=true;button.textContent='⏳ Analyse en cours…'}
+ $('#collectibleLoading')?.remove();
+ wrap.insertAdjacentHTML('beforeend','<p id="collectibleLoading" class="hint"><span class="loader"></span> Analyse de l’objet en cours…</p>');
+ try{
+  const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),60000);let r;
+  try{r=await authFetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'recognize_object',image:pendingCollectibleRecognitionImage}),signal:controller.signal})}finally{clearTimeout(timer)}
+  const raw=await r.text();let data={};try{data=raw?JSON.parse(raw):{}}catch{}
+  if(!r.ok)throw new Error(data.error||`Erreur serveur HTTP ${r.status}`);
+  if(!data.name&&!data.brand&&!data.description)throw new Error(data.error||'Le serveur n’a pas renvoyé de fiche objet. Vérifie que le Worker Cloudflare contient la fonction recognize_object.');
+  $('#collectibleLoading')?.remove();collectiblePhotoDialog.close();
+  const d=window._collectibleDraft||{};
+  await openCollectibleEditor({...d,...data,category:data.category||d.category||'Autre',brand:data.brand||d.brand||'',year:data.year||d.year||'',country:data.country||d.country||'',series:data.series||d.series||'',reference:data.reference||d.reference||'',notes:[data.description,d.notes].filter(Boolean).join(d.notes&&data.description?'\n':''),image:pendingCollectibleRecognitionImage,quantity:d.quantity||1,condition:d.condition||'Inconnu',price:d.price||''});
+  window._collectibleDraft=null;
+ }catch(e){
+  $('#collectibleLoading')?.remove();
+  const msg=e.name==='AbortError'?'Délai dépassé : le serveur n’a pas répondu en 60 secondes.':(e.message||'Erreur inconnue');
+  const old=wrap.querySelector('#collectibleRecognitionError');if(old)old.remove();
+  wrap.insertAdjacentHTML('beforeend',`<p id="collectibleRecognitionError" class="hint" role="alert" style="color:#fecaca;overflow-wrap:anywhere">❌ Échec de la reconnaissance : ${escapeHtml(msg)}</p>`);
+  if(button){button.disabled=false;button.textContent='🤖 Réessayer la reconnaissance'}
+  toast('Reconnaissance impossible. Le détail est affiché sous la photo.');
+ }
+}
 function collectibleSearchText(x){return [x?.name,x?.category,x?.brand,x?.year,x?.series,x?.reference].map(v=>String(v||'').trim().replace(/\s+/g,' ')).filter(Boolean).join(' ').slice(0,180)}
 function collectibleVintedUrl(x){const u=new URL('https://www.vinted.fr/catalog');const q=collectibleSearchText(x);if(q)u.searchParams.set('search_text',q);return u.toString()}
 function collectibleVintedUrlFromForm(){return collectibleVintedUrl({name:$('#oName')?.value||'',category:$('#oCategory')?.value||'',brand:$('#oBrand')?.value||'',year:$('#oYear')?.value||'',series:$('#oSeries')?.value||'',reference:$('#oReference')?.value||''})}
