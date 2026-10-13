@@ -802,7 +802,7 @@ async function generateMissingDescriptions(){
  if(!confirm(`Générer une présentation pour ${missing.length} jeu(x) dont la note est vide ?`))return;
  const button=[...document.querySelectorAll('button')].find(b=>b.textContent.includes('Présentations manquantes'));
  if(button){button.disabled=true;button.dataset.oldText=button.textContent;button.textContent='⏳ Génération…'}
- let done=0,failed=0;
+ let done=0,failed=0,firstError='';
  try{
   for(const g of missing){
    try{
@@ -811,10 +811,13 @@ async function generateMissingDescriptions(){
     g.updatedAt=new Date().toISOString();
     await putGame(g);
     done++;
-   }catch(e){failed++;console.warn('Présentation impossible pour',g.title,e)}
+   }catch(e){failed++;if(!firstError)firstError=e?.message||String(e);console.warn('Présentation impossible pour',g.title,e)}
   }
   await refresh();
-  toast(failed?`✨ ${done} présentation(s) ajoutée(s), ${failed} échec(s)`:`✨ ${done} présentation(s) ajoutée(s)`);
+  if(failed){
+   const detail=firstError?` Première erreur : ${firstError}`:'';
+   toast(`✨ ${done} présentation(s) ajoutée(s), ${failed} échec(s).${detail}`);
+  }else toast(`✨ ${done} présentation(s) ajoutée(s)`);
  }finally{
   if(button){button.disabled=false;button.textContent=button.dataset.oldText||'✨ Présentations manquantes'}
  }
@@ -1033,7 +1036,20 @@ function openEditor(g={}){
  d.showModal();
 }
 const gameDialog=$('#gameDialog');
-async function saveEditor(){const old=editingId?games.find(x=>x.id===editingId):null;const g={id:editingId||crypto.randomUUID(),image:old?.image||pendingImage,title:$('#fTitle').value.trim(),platform:$('#fPlatform').value.trim(),year:$('#fYear').value||'',edition:$('#fEdition').value.trim(),condition:$('#fCondition').value,quantity:Math.max(1,Number($('#fQty').value)||1),price:$('#fPrice').value===''?'':Number($('#fPrice').value),priceDate:$('#fPriceDate').value,notes:$('#fNotes').value.trim(),description:old?.description||'',estimate:window._pendingEstimate||old?.estimate||null,updatedAt:new Date().toISOString()};await putGame(g);gameDialog.close();pendingImage='';window._pendingEstimate=null;await refresh();toast('Jeu enregistré')}
+async function saveEditor(){
+ const old=editingId?games.find(x=>x.id===editingId):null;
+ const isNew=!old;
+ const g={id:editingId||crypto.randomUUID(),image:old?.image||pendingImage,title:$('#fTitle').value.trim(),platform:$('#fPlatform').value.trim(),year:$('#fYear').value||'',edition:$('#fEdition').value.trim(),condition:$('#fCondition').value,quantity:Math.max(1,Number($('#fQty').value)||1),price:$('#fPrice').value===''?'':Number($('#fPrice').value),priceDate:$('#fPriceDate').value,notes:$('#fNotes').value.trim(),description:old?.description||'',estimate:window._pendingEstimate||old?.estimate||null,updatedAt:new Date().toISOString()};
+ await putGame(g);gameDialog.close();pendingImage='';window._pendingEstimate=null;await refresh();
+ if(isNew&&g.title&&!String(g.notes||g.description||'').trim()){
+  toast('Jeu enregistré. Génération de la présentation…');
+  try{
+   g.notes=await generateGameDescription(g);
+   g.updatedAt=new Date().toISOString();
+   await putGame(g);await refresh();toast('Jeu enregistré avec sa présentation.');
+  }catch(e){console.warn('Présentation impossible pour',g.title,e);toast(`Jeu enregistré, mais la présentation a échoué : ${e?.message||'erreur inconnue'}`)}
+ }else toast('Jeu enregistré');
+}
 async function editGame(id){const g=games.find(x=>x.id===id);if(g)openEditor(g)}
 async function estimateEditingGame(){
  const g={id:editingId,title:$('#fTitle')?.value.trim(),platform:$('#fPlatform')?.value.trim(),year:$('#fYear')?.value||'',edition:$('#fEdition')?.value.trim(),condition:$('#fCondition')?.value||''};
