@@ -885,9 +885,54 @@ function bindCollection(){const s=$('#search'), s2=$('#collectionSearch'), f=$('
  if(f)f.onchange=()=>{window._p=f.value||'Tous';render()};
  if(cf)cf.onchange=()=>{window._c=cf.value||'Tous';render()}}
 
+
+function consolePresentation(c){
+ const parts=[c?.description,c?.research,c?.notes].map(v=>String(v||'').trim()).filter(Boolean);
+ return [...new Set(parts)].join('\n\n');
+}
+async function generateConsolePresentation(c){
+ const url=getWorkerUrl();
+ if(!url)throw new Error('Configure d’abord l’URL du serveur dans Réglages.');
+ const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),90000);let response;
+ try{
+  response=await authFetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'update_console',record:c}),signal:controller.signal});
+ }finally{clearTimeout(timer)}
+ const raw=await response.text();let data={};try{data=raw?JSON.parse(raw):{}}catch{}
+ if(!response.ok)throw new Error(data.error||`Erreur serveur HTTP ${response.status}`);
+ const proposed=data.suggestions||data.proposals||data.record||{};
+ const parts=[proposed.description,proposed.research].map(v=>String(v||'').trim()).filter(Boolean);
+ const presentation=[...new Set(parts)].join('\n\n');
+ if(!presentation)throw new Error('Aucune présentation exploitable retournée.');
+ return {presentation,sources:Array.isArray(data.sources)?data.sources:[],suggestions:proposed};
+}
+async function generateMissingConsolePresentations(button){
+ const missing=consoles.filter(c=>c&&c.id&&c.name&&!consolePresentation(c).trim());
+ if(!missing.length){toast('✨ Toutes les consoles ont déjà une présentation.');return}
+ if(!confirm(`Générer automatiquement une présentation pour ${missing.length} console(s) dont la présentation est vide ?\n\nSeules les fiches sans présentation seront traitées. Les autres resteront inchangées.`))return;
+ if(!getWorkerUrl()){toast('Configure d’abord l’URL du serveur dans Réglages.');return}
+ const oldText=button?.textContent;let done=0,failed=0,firstError='';
+ if(button){button.disabled=true;button.textContent='⏳ Génération des présentations…'}
+ try{
+  for(const c of missing){
+   try{
+    const result=await generateConsolePresentation(c);
+    const updated={...c,description:result.presentation,research:'',notes:'',sources:result.sources.length?result.sources:(c.sources||[]),researchedAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
+    for(const key of ['name','model','edition','brand','year','country','series','reference','identification_status']){
+     const v=result.suggestions?.[key];if(typeof v==='string'&&v.trim())updated[key]=v.trim();
+    }
+    if(result.suggestions?.confidence!=null&&Number.isFinite(Number(result.suggestions.confidence)))updated.researchConfidence=Number(result.suggestions.confidence);
+    await putConsole(updated);done++;
+   }catch(e){failed++;if(!firstError)firstError=e?.message||String(e);console.warn('Présentation console impossible pour',c.name,e)}
+  }
+  await refresh();
+  if(failed)toast(`✨ ${done} présentation(s) ajoutée(s), ${failed} échec(s). Première erreur : ${firstError}`);
+  else toast(`✨ ${done} présentation(s) ajoutée(s) automatiquement.`);
+ }finally{if(button){button.disabled=false;button.textContent=oldText||'✨ Remplir les présentations vides'}}
+}
+
 function consoleSearchUrl(c){const u=new URL('https://www.vinted.fr/catalog');const q=[c?.name,c?.model,c?.edition].map(x=>String(x||'').trim().replace(/\s+/g,' ')).filter(Boolean).join(' ').slice(0,180);if(q)u.searchParams.set('search_text',q);return u.toString()}
 function consoleEbayUrl(c){return 'https://www.ebay.fr/sch/i.html?_nkw='+encodeURIComponent([c.name,c.model,c.edition].filter(Boolean).join(' '))}
-function consolesHTML(){const q=window._cq||'';let list=consoles.filter(c=>(!q||`${c.name} ${c.model} ${c.edition}`.toLowerCase().includes(q.toLowerCase())));return `<div class="app">${header()}<section class="hero street"><span class="streetBadge">⚡ FIGHT • COLLECT • REPEAT ⚡</span><h1>🕹️ MES CONSOLES</h1><button class="primary" onclick="openConsoleAdd()">＋ Ajouter une console par photo</button><button class="arcadeTool consoleManualButton" onclick="openConsoleEditor()">✏️ Saisie manuelle</button><button class="detailAction" onclick="bulkResearchAll('console',this)">🔎 Compléter toutes les fiches consoles</button></section><div class="toolbar"><input class="search" id="consoleSearch" placeholder="Rechercher une console…" value="${escapeHtml(q)}"></div><div class="consoleGrid">${list.map(consoleCard).join('')||'<div class="empty" style="grid-column:1/-1">Aucune console enregistrée.</div>'}</div></div>`}
+function consolesHTML(){const q=window._cq||'';let list=consoles.filter(c=>(!q||`${c.name} ${c.model} ${c.edition}`.toLowerCase().includes(q.toLowerCase())));return `<div class="app">${header()}<section class="hero street"><span class="streetBadge">⚡ FIGHT • COLLECT • REPEAT ⚡</span><h1>🕹️ MES CONSOLES</h1><button class="primary" onclick="openConsoleAdd()">＋ Ajouter une console par photo</button><button class="arcadeTool consoleManualButton" onclick="openConsoleEditor()">✏️ Saisie manuelle</button><button class="detailAction" onclick="generateMissingConsolePresentations(this)">✨ Remplir les présentations vides</button></section><div class="toolbar"><input class="search" id="consoleSearch" placeholder="Rechercher une console…" value="${escapeHtml(q)}"></div><div class="consoleGrid">${list.map(consoleCard).join('')||'<div class="empty" style="grid-column:1/-1">Aucune console enregistrée.</div>'}</div></div>`}
 function consoleCard(c){return `<article class="card" onclick="editConsole('${c.id}')">${c.image?`<img class="thumb" src="${c.image}" alt="" loading="lazy" decoding="async">`:`<div class="thumb"></div>`}<div class="cardbody"><div class="title">${escapeHtml(c.name||'Console')}</div><div class="meta">${escapeHtml(c.model||'Modèle non renseigné')}${c.edition?' · '+escapeHtml(c.edition):''}</div>${c.research?`<div class="meta">🔎 ${escapeHtml(c.research)}</div>`:''}<span class="tag">${escapeHtml(c.condition||'État non renseigné')} · x${c.quantity||1}</span><div class="price">${c.price!==''&&c.price!=null?euro(Number(c.price)*(Number(c.quantity)||1)):'Valeur inconnue'}</div></div></article>`}
 function bindConsoles(){const s=$('#consoleSearch');if(s)s.oninput=e=>{window._cq=e.target.value;updateConsoleSearch()}}
 function updateConsoleSearch(){const root=$('.consoleGrid');if(!root)return;const q=window._cq||'';const list=consoles.filter(c=>(!q||`${c.name} ${c.model} ${c.edition}`.toLowerCase().includes(q.toLowerCase())));root.innerHTML=list.map(consoleCard).join('')||'<div class="empty" style="grid-column:1/-1">Aucune console enregistrée.</div>'}
@@ -909,7 +954,7 @@ function collectiblesHTML(){
  const q=String(window._oq||'').toLocaleLowerCase('fr').trim();
  const list=collectibles.filter(x=>!q||`${x.name||''} ${x.category||''} ${x.brand||''} ${x.year||''} ${x.notes||''}`.toLocaleLowerCase('fr').includes(q)).sort((a,b)=>(a.name||'').localeCompare(b.name||'','fr'));
  const total=list.reduce((n,x)=>n+(Number(x.price)||0)*(Number(x.quantity)||1),0);
- return `<div class="app">${header()}<section class="hero street"><span class="streetBadge">✨ OBJETS RARES • SOUVENIRS • PASSION ✨</span><h1>🧸 MES OBJETS DE COLLECTION</h1><p>Figurines Disney, peluches, jouets, antiquités et objets vintage.</p><div class="actions"><button class="primary" onclick="openCollectibleAddByPhoto()">📸 Ajouter par photo avec OpenAI</button><button onclick="openCollectibleEditor()">✏️ Saisie manuelle</button><button class="detailAction" onclick="bulkResearchAll('object',this)">🔎 Compléter toutes les fiches objets</button></div></section><div class="toolbar"><input class="search" id="objectSearch" placeholder="Rechercher un objet, une marque, une catégorie…" value="${escapeHtml(window._oq||'')}"></div><div class="sectionTitle">${list.length} objet(s) · Valeur affichée ${euro(total)}</div><div class="consoleGrid">${list.map(collectibleCard).join('')||'<div class="empty" style="grid-column:1/-1">Aucun objet enregistré. Appuie sur « Ajouter un objet » pour commencer.</div>'}</div></div>`;
+ return `<div class="app">${header()}<section class="hero street"><span class="streetBadge">✨ OBJETS RARES • SOUVENIRS • PASSION ✨</span><h1>🧸 MES OBJETS DE COLLECTION</h1><p>Figurines Disney, peluches, jouets, antiquités et objets vintage.</p><div class="actions"><button class="primary" onclick="openCollectibleAddByPhoto()">📸 Ajouter par photo avec OpenAI</button><button onclick="openCollectibleEditor()">✏️ Saisie manuelle</button><button class="detailAction" onclick="generateMissingObjectPresentations(this)">✨ Remplir les présentations vides</button></div></section><div class="toolbar"><input class="search" id="objectSearch" placeholder="Rechercher un objet, une marque, une catégorie…" value="${escapeHtml(window._oq||'')}"></div><div class="sectionTitle">${list.length} objet(s) · Valeur affichée ${euro(total)}</div><div class="consoleGrid">${list.map(collectibleCard).join('')||'<div class="empty" style="grid-column:1/-1">Aucun objet enregistré. Appuie sur « Ajouter un objet » pour commencer.</div>'}</div></div>`;
 }
 function collectiblePresentation(x){
  const parts=[x?.description,x?.research,x?.notes].map(v=>String(v||'').trim()).filter(Boolean);
@@ -1038,6 +1083,52 @@ async function bulkResearchAll(kind,button){
  }finally{
   const dlg=$('#bulkResearchDialog');if(dlg?.open)dlg.close();bulkResearchResolve=null;
   if(button){button.disabled=false;button.textContent=oldText||'🔎 Compléter toutes les fiches'}
+ }
+}
+
+
+async function generateObjectPresentation(x){
+ const url=getWorkerUrl();
+ if(!url)throw new Error('Configure d’abord l’URL du serveur dans Réglages.');
+ const controller=new AbortController();
+ const timer=setTimeout(()=>controller.abort(),90000);
+ let response;
+ try{
+  response=await authFetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'update_object',record:x}),signal:controller.signal});
+ }finally{clearTimeout(timer)}
+ const raw=await response.text();let data={};try{data=raw?JSON.parse(raw):{}}catch{}
+ if(!response.ok)throw new Error(data.error||`Erreur serveur HTTP ${response.status}`);
+ const proposed=data.suggestions||data.proposals||data.record||{};
+ const parts=[proposed.description,proposed.research].map(v=>String(v||'').trim()).filter(Boolean);
+ const presentation=[...new Set(parts)].join('\n\n');
+ if(!presentation)throw new Error('Aucune présentation exploitable retournée.');
+ return {presentation,sources:Array.isArray(data.sources)?data.sources:[],suggestions:proposed};
+}
+async function generateMissingObjectPresentations(button){
+ const missing=collectibles.filter(x=>x&&x.id&&x.name&&!collectiblePresentation(x).trim());
+ if(!missing.length){toast('✨ Tous les objets ont déjà une présentation.');return}
+ if(!confirm(`Générer automatiquement une présentation pour ${missing.length} objet(s) dont la présentation est vide ?\n\nSeules les fiches sans présentation seront traitées. Les autres resteront inchangées.`))return;
+ const url=getWorkerUrl();if(!url){toast('Configure d’abord l’URL du serveur dans Réglages.');return}
+ const oldText=button?.textContent;
+ let done=0,failed=0,firstError='';
+ if(button){button.disabled=true;button.textContent='⏳ Génération des présentations…'}
+ try{
+  for(const x of missing){
+   try{
+    const result=await generateObjectPresentation(x);
+    const updated={...x,description:result.presentation,notes:'',research:'',sources:result.sources.length?result.sources:(x.sources||[]),researchedAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
+    const fields=['name','category','brand','year','country','series','reference','identification_status'];
+    for(const key of fields){const v=result.suggestions?.[key];if(typeof v==='string'&&v.trim())updated[key]=v.trim()}
+    if(result.suggestions?.confidence!=null&&Number.isFinite(Number(result.suggestions.confidence)))updated.researchConfidence=Number(result.suggestions.confidence);
+    await putCollectible(updated);
+    done++;
+   }catch(e){failed++;if(!firstError)firstError=e?.message||String(e);console.warn('Présentation objet impossible pour',x.name,e)}
+  }
+  await refresh();
+  if(failed)toast(`✨ ${done} présentation(s) ajoutée(s), ${failed} échec(s). Première erreur : ${firstError}`);
+  else toast(`✨ ${done} présentation(s) ajoutée(s) automatiquement.`);
+ }finally{
+  if(button){button.disabled=false;button.textContent=oldText||'✨ Remplir les présentations vides'}
  }
 }
 
