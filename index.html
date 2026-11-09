@@ -619,7 +619,7 @@ function allCollectibles(){return new Promise((res,rej)=>{const t=db.transaction
 function putCollectible(x){return new Promise((res,rej)=>{const t=db.transaction(OBJECT_STORE,'readwrite');t.objectStore(OBJECT_STORE).put(x);t.oncomplete=res;t.onerror=()=>rej(t.error)})}
 function deleteCollectible(id){return new Promise((res,rej)=>{const t=db.transaction(OBJECT_STORE,'readwrite');t.objectStore(OBJECT_STORE).delete(id);t.oncomplete=res;t.onerror=()=>rej(t.error)})}
 const $=s=>document.querySelector(s);
-function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>t.hidden=true,2800)}
+function toast(m){const t=$('#toast');if(!t)return;t.textContent=m;t.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>t.hidden=true,8000)}
 function euro(v){return Number.isFinite(Number(v))?new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR'}).format(Number(v)):'Prix inconnu'}
 function escapeHtml(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
 
@@ -922,7 +922,7 @@ async function generateMissingConsolePresentations(button){
     }
     if(result.suggestions?.confidence!=null&&Number.isFinite(Number(result.suggestions.confidence)))updated.researchConfidence=Number(result.suggestions.confidence);
     await putConsole(updated);done++;
-   }catch(e){failed++;if(!firstError)firstError=e?.message||String(e);console.warn('Présentation console impossible pour',c.name,e)}
+   }catch(e){failed++;const message=e?.name==='AbortError'?'Délai dépassé (90 s).':(e?.message||String(e));if(!firstError)firstError=`${c.name} : ${message}`;console.warn('Présentation console impossible pour',c.name,e)}
   }
   await refresh();
   if(failed)toast(`✨ ${done} présentation(s) ajoutée(s), ${failed} échec(s). Première erreur : ${firstError}`);
@@ -1122,7 +1122,7 @@ async function generateMissingObjectPresentations(button){
     if(result.suggestions?.confidence!=null&&Number.isFinite(Number(result.suggestions.confidence)))updated.researchConfidence=Number(result.suggestions.confidence);
     await putCollectible(updated);
     done++;
-   }catch(e){failed++;if(!firstError)firstError=e?.message||String(e);console.warn('Présentation objet impossible pour',x.name,e)}
+   }catch(e){failed++;const message=e?.name==='AbortError'?'Délai dépassé (90 s).':(e?.message||String(e));if(!firstError)firstError=`${x.name} : ${message}`;console.warn('Présentation objet impossible pour',x.name,e)}
   }
   await refresh();
   if(failed)toast(`✨ ${done} présentation(s) ajoutée(s), ${failed} échec(s). Première erreur : ${firstError}`);
