@@ -982,18 +982,18 @@ async function recognizeCollectiblePhoto(){
  $('#collectibleLoading')?.remove();
  wrap.insertAdjacentHTML('beforeend','<p id="collectibleLoading" class="hint"><span class="loader"></span> Analyse de l’objet en cours…</p>');
  try{
-  const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),120000);let r;
+  const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),150000);let r;
   try{r=await authFetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'recognize_object',image:pendingCollectibleRecognitionImage}),signal:controller.signal})}finally{clearTimeout(timer)}
   const raw=await r.text();let data={};try{data=raw?JSON.parse(raw):{}}catch{}
   if(!r.ok)throw new Error(data.error||`Erreur serveur HTTP ${r.status}`);
   if(!data.name&&!data.brand&&!data.description)throw new Error(data.error||'Le serveur n’a pas renvoyé de fiche objet. Vérifie que le Worker Cloudflare contient la fonction recognize_object.');
   $('#collectibleLoading')?.remove();collectiblePhotoDialog.close();
   const d=window._collectibleDraft||{};
-  await openCollectibleEditor({...d,...data,category:data.category||d.category||'Autre',brand:data.brand||d.brand||'',year:data.year||d.year||'',country:data.country||d.country||'',series:data.series||d.series||'',reference:data.reference||d.reference||'',notes:d.notes||'',description:data.description||'',research:data.research||'',sources:Array.isArray(data.sources)?data.sources:[],image:pendingCollectibleRecognitionImage,quantity:d.quantity||1,condition:d.condition||'Inconnu',price:d.price||''});
+  await openCollectibleEditor({...d,...data,category:data.category||d.category||'Autre',brand:data.brand||d.brand||'',year:data.year||d.year||'',country:data.country||d.country||'',series:data.series||d.series||'',reference:data.reference||d.reference||'',notes:[data.description,d.notes].filter(Boolean).join(d.notes&&data.description?'\n':''),research:data.research||'',sources:Array.isArray(data.sources)?data.sources:[],image:pendingCollectibleRecognitionImage,quantity:d.quantity||1,condition:d.condition||'Inconnu',price:d.price||''});
   window._collectibleDraft=null;
  }catch(e){
   $('#collectibleLoading')?.remove();
-  const msg=e.name==='AbortError'?'Délai dépassé : l’identification et la recherche Web n’ont pas répondu en 120 secondes.':(e.message||'Erreur inconnue');
+  const msg=e.name==='AbortError'?'Délai dépassé : le serveur n’a pas répondu en 60 secondes.':(e.message||'Erreur inconnue');
   const old=wrap.querySelector('#collectibleRecognitionError');if(old)old.remove();
   wrap.insertAdjacentHTML('beforeend',`<p id="collectibleRecognitionError" class="hint" role="alert" style="color:#fecaca;overflow-wrap:anywhere">❌ Échec de la reconnaissance : ${escapeHtml(msg)}</p>`);
   if(button){button.disabled=false;button.textContent='🤖 Réessayer la reconnaissance'}
@@ -1087,15 +1087,6 @@ async function bulkResearchAll(kind,button){
 }
 
 
-async function applyGeneratedObjectPresentation(x,result){
- const updated={...x,description:result.presentation,notes:'',research:'',sources:result.sources.length?result.sources:(x.sources||[]),researchedAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
- const fields=['name','category','brand','year','country','series','reference','identification_status'];
- for(const key of fields){const v=result.suggestions?.[key];if(typeof v==='string'&&v.trim())updated[key]=v.trim()}
- if(result.suggestions?.confidence!=null&&Number.isFinite(Number(result.suggestions.confidence)))updated.researchConfidence=Number(result.suggestions.confidence);
- await putCollectible(updated);
- return updated;
-}
-
 async function generateObjectPresentation(x){
  const url=getWorkerUrl();
  if(!url)throw new Error('Configure d’abord l’URL du serveur dans Réglages.');
@@ -1125,7 +1116,11 @@ async function generateMissingObjectPresentations(button){
   for(const x of missing){
    try{
     const result=await generateObjectPresentation(x);
-    await applyGeneratedObjectPresentation(x,result);
+    const updated={...x,description:result.presentation,notes:'',research:'',sources:result.sources.length?result.sources:(x.sources||[]),researchedAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
+    const fields=['name','category','brand','year','country','series','reference','identification_status'];
+    for(const key of fields){const v=result.suggestions?.[key];if(typeof v==='string'&&v.trim())updated[key]=v.trim()}
+    if(result.suggestions?.confidence!=null&&Number.isFinite(Number(result.suggestions.confidence)))updated.researchConfidence=Number(result.suggestions.confidence);
+    await putCollectible(updated);
     done++;
    }catch(e){failed++;const message=e?.name==='AbortError'?'Délai dépassé (90 s).':(e?.message||String(e));if(!firstError)firstError=`${x.name} : ${message}`;console.warn('Présentation objet impossible pour',x.name,e)}
   }
@@ -1167,19 +1162,6 @@ async function saveCollectible(){
   delete pageDomCache.objects;
   render();
   toast('Objet de collection enregistré');
-  if(!collectiblePresentation(x).trim()){
-   toast('✨ Présentation de l’objet en cours de création…');
-   generateObjectPresentation(x).then(async result=>{
-    const updated=await applyGeneratedObjectPresentation(x,result);
-    const index=collectibles.findIndex(item=>item.id===updated.id);
-    if(index>=0)collectibles[index]=updated;
-    await refresh();
-    toast('✨ Présentation de l’objet créée et enregistrée automatiquement.');
-   }).catch(error=>{
-    const message=error?.name==='AbortError'?'Délai dépassé (90 s).':(error?.message||String(error));
-    toast('Objet enregistré, mais présentation non créée : '+message);
-   });
-  }
  }catch(e){
   console.error('Erreur enregistrement objet :',e);
   toast('Enregistrement impossible : '+(e?.message||'erreur inconnue')+'. Tes informations sont toujours dans le formulaire.');
