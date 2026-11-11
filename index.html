@@ -1087,6 +1087,15 @@ async function bulkResearchAll(kind,button){
 }
 
 
+async function applyGeneratedObjectPresentation(x,result){
+ const updated={...x,description:result.presentation,notes:'',research:'',sources:result.sources.length?result.sources:(x.sources||[]),researchedAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
+ const fields=['name','category','brand','year','country','series','reference','identification_status'];
+ for(const key of fields){const v=result.suggestions?.[key];if(typeof v==='string'&&v.trim())updated[key]=v.trim()}
+ if(result.suggestions?.confidence!=null&&Number.isFinite(Number(result.suggestions.confidence)))updated.researchConfidence=Number(result.suggestions.confidence);
+ await putCollectible(updated);
+ return updated;
+}
+
 async function generateObjectPresentation(x){
  const url=getWorkerUrl();
  if(!url)throw new Error('Configure d’abord l’URL du serveur dans Réglages.');
@@ -1116,11 +1125,7 @@ async function generateMissingObjectPresentations(button){
   for(const x of missing){
    try{
     const result=await generateObjectPresentation(x);
-    const updated={...x,description:result.presentation,notes:'',research:'',sources:result.sources.length?result.sources:(x.sources||[]),researchedAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
-    const fields=['name','category','brand','year','country','series','reference','identification_status'];
-    for(const key of fields){const v=result.suggestions?.[key];if(typeof v==='string'&&v.trim())updated[key]=v.trim()}
-    if(result.suggestions?.confidence!=null&&Number.isFinite(Number(result.suggestions.confidence)))updated.researchConfidence=Number(result.suggestions.confidence);
-    await putCollectible(updated);
+    await applyGeneratedObjectPresentation(x,result);
     done++;
    }catch(e){failed++;const message=e?.name==='AbortError'?'Délai dépassé (90 s).':(e?.message||String(e));if(!firstError)firstError=`${x.name} : ${message}`;console.warn('Présentation objet impossible pour',x.name,e)}
   }
@@ -1162,6 +1167,19 @@ async function saveCollectible(){
   delete pageDomCache.objects;
   render();
   toast('Objet de collection enregistré');
+  if(!collectiblePresentation(x).trim()){
+   toast('✨ Présentation de l’objet en cours de création…');
+   generateObjectPresentation(x).then(async result=>{
+    const updated=await applyGeneratedObjectPresentation(x,result);
+    const index=collectibles.findIndex(item=>item.id===updated.id);
+    if(index>=0)collectibles[index]=updated;
+    await refresh();
+    toast('✨ Présentation de l’objet créée et enregistrée automatiquement.');
+   }).catch(error=>{
+    const message=error?.name==='AbortError'?'Délai dépassé (90 s).':(error?.message||String(error));
+    toast('Objet enregistré, mais présentation non créée : '+message);
+   });
+  }
  }catch(e){
   console.error('Erreur enregistrement objet :',e);
   toast('Enregistrement impossible : '+(e?.message||'erreur inconnue')+'. Tes informations sont toujours dans le formulaire.');
